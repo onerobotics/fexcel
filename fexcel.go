@@ -234,5 +234,5 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	fmt.Printf("Updated %d flags registers\n", count)
+	fmt.Printf("Updated %d flags\n", count)
 }
