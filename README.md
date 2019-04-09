@@ -10,21 +10,23 @@ Utility for setting FANUC robot comments from an Excel spreadsheet.
 
 ## Options
 
--sheet		the name of the sheet (default Sheet1)
--offset		number of columns to shift between id and comments (default 1)
--numregs	start cell of numeric register definitions
--posregs	start cell of position register definitions
--ualms		start cell of user alarm definitions
--rins		start cell of robot input definitions
--routs		start cell of robot output definitions
--dins		start cell of digital input definitions
--douts		start cell of digital output definitions
--gins		start cell of group input definitions
--gouts		start cell of group output definitions
--ains		start cell of analog input definitions
--aouts		start cell of analog output definitions
--sregs		start cell of string register definitions
--flags		start cell of flag definitions
+| Option   | Description |
+| -------- | ----------- |
+| -sheet   | the name of the sheet (default Sheet1) |
+| -offset  | number of columns to shift between id and comments (default 1) |
+| -numregs | start cell of numeric register definitions |
+| -posregs | start cell of position register definitions |
+| -ualms   | start cell of user alarm definitions | 
+| -rins    | start cell of robot input definitions |
+| -routs   | start cell of robot output definitions |
+| -dins    | start cell of digital input definitions |
+| -douts   | start cell of digital output definitions |
+| -gins    | start cell of group input definitions |
+| -gouts   | start cell of group output definitions |
+| -ains    | start cell of analog input definitions |
+| -aouts   | start cell of analog output definitions |
+| -sregs   | start cell of string register definitions |
+| -flags   | start cell of flag definitions |
 
 ## Details
 
