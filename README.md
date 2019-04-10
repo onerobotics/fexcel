@@ -6,9 +6,9 @@ Utility for setting FANUC robot comments from an Excel spreadsheet.
 
 Make sure KAREL is unlocked under `Setup > Host Comm > HTTP`.
 
-    fexcel [options] filename host
+    fexcel [options] filename host(s)...
 
-    > ./fexcel -sheet Data -numregs A2 -posregs D2 spreadsheet.xlsx 127.0.0.101
+    > ./fexcel -sheet Data -numregs A2 -posregs D2 spreadsheet.xlsx 127.0.0.101 127.0.0.102
 
 ## Options
 
