@@ -124,6 +124,13 @@ func setComments(startCell string, xlsx *excelize.File, f comtool.FunctionCode, 
 	return
 }
 
+func check(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
 func main() {
 	flag.Parse()
 
@@ -138,101 +145,59 @@ func main() {
 	}
 
 	xlsx, err := excelize.OpenFile(filename)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	check(err)
 
 	fmt.Printf(logo)
 
 	count, err := setComments(numregs, xlsx, comtool.NUMREG, host)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	check(err)
 	fmt.Printf("Updated %d numeric registers\n", count)
 
 	count, err = setComments(posregs, xlsx, comtool.POSREG, host)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	check(err)
 	fmt.Printf("Updated %d position registers\n", count)
 
 	count, err = setComments(ualms, xlsx, comtool.UALM, host)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	check(err)
 	fmt.Printf("Updated %d user alarms\n", count)
 
 	count, err = setComments(rins, xlsx, comtool.RIN, host)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	check(err)
 	fmt.Printf("Updated %d robot inputs\n", count)
 
 	count, err = setComments(routs, xlsx, comtool.ROUT, host)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	check(err)
 	fmt.Printf("Updated %d robot outputs\n", count)
 
 	count, err = setComments(dins, xlsx, comtool.DIN, host)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	check(err)
 	fmt.Printf("Updated %d digital inputs\n", count)
 
 	count, err = setComments(douts, xlsx, comtool.DOUT, host)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	check(err)
 	fmt.Printf("Updated %d digital outputs\n", count)
 
 	count, err = setComments(gins, xlsx, comtool.GIN, host)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	check(err)
 	fmt.Printf("Updated %d group inputs\n", count)
 
 	count, err = setComments(gouts, xlsx, comtool.GOUT, host)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	check(err)
 	fmt.Printf("Updated %d group outputs\n", count)
 
 	count, err = setComments(ains, xlsx, comtool.AIN, host)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	check(err)
 	fmt.Printf("Updated %d analog inputs\n", count)
 
 	count, err = setComments(aouts, xlsx, comtool.AOUT, host)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	check(err)
 	fmt.Printf("Updated %d analog outputs\n", count)
 
 	count, err = setComments(sregs, xlsx, comtool.SREG, host)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	check(err)
 	fmt.Printf("Updated %d string registers\n", count)
 
 	count, err = setComments(flags, xlsx, comtool.FLAG, host)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	check(err)
 	fmt.Printf("Updated %d flags\n", count)
 }
