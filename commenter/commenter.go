@@ -159,7 +159,7 @@ func (c *commenter) Update(host string) error {
 	}
 	fmt.Printf("Updated %d analog outputs\n", count)
 
-	count, err = c.processColumn(c.Config.Sregs, comtool.SREG, host, MaxIOLength)
+	count, err = c.processColumn(c.Config.Sregs, comtool.SREG, host, MaxDataLength)
 	if err != nil {
 		return err
 	}
