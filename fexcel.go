@@ -11,7 +11,7 @@ import (
 var (
 	sheetName string
 	offset    int
-	cfg commenter.Config
+	cfg       commenter.Config
 )
 
 const logo = `  __                  _

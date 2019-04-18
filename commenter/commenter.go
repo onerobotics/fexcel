@@ -11,24 +11,24 @@ import (
 
 const (
 	MaxDataLength = 16
-	MaxIOLength = 24
+	MaxIOLength   = 24
 	MaxUalmLength = 29
 )
 
 type Config struct {
-	Numregs   string
-	Posregs   string
-	Ualms     string
-	Rins      string
-	Routs     string
-	Dins      string
-	Douts     string
-	Gins      string
-	Gouts     string
-	Ains      string
-	Aouts     string
-	Sregs     string
-	Flags     string
+	Numregs string
+	Posregs string
+	Ualms   string
+	Rins    string
+	Routs   string
+	Dins    string
+	Douts   string
+	Gins    string
+	Gouts   string
+	Ains    string
+	Aouts   string
+	Sregs   string
+	Flags   string
 }
 
 type commenter struct {
@@ -45,16 +45,15 @@ func New(filename string, sheetName string, offset int, cfg Config) (*commenter,
 		return nil, err
 	}
 
-
 	index := xlsx.GetSheetIndex(sheetName)
 	if index == 0 {
 		return nil, fmt.Errorf("Could not find sheet with name '%s' in file: %s\n", sheetName, filename)
 	}
 
 	c := &commenter{
-		Config: cfg,
+		Config:    cfg,
 		SheetName: sheetName,
-		Offset: offset,
+		Offset:    offset,
 	}
 	c.xlsx = xlsx
 
@@ -175,8 +174,8 @@ func (c *commenter) Update(host string) error {
 	return nil
 }
 
-func (c *commenter) warn(format string, args... interface{}) {
-	fmt.Printf("WARNING: " + format, args...)
+func (c *commenter) warn(format string, args ...interface{}) {
+	fmt.Printf("WARNING: "+format, args...)
 }
 
 func (c *commenter) processColumn(startCell string, fCode comtool.FunctionCode, host string, maxLength int) (count int, err error) {
