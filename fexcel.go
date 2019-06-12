@@ -8,6 +8,8 @@ import (
 	"github.com/onerobotics/fexcel/commenter"
 )
 
+const VERSION = "1.0-beta.4"
+
 var (
 	sheetName string
 	offset    int
@@ -20,6 +22,7 @@ const logo = `  __                  _
 |  _/ _ \ \/ / __/ _ \ |
 | ||  __/>  < (_|  __/ |
 |_| \___/_/\_\___\___|_|
+             v1.0-beta.4
 
 by ONE Robotics Company
 www.onerobotics.com
@@ -30,7 +33,7 @@ func usage() {
 	fmt.Fprintf(os.Stderr, logo)
 	fmt.Fprintf(os.Stderr, "Usage: fexcel [options] filename host(s)...\n\n")
 
-	fmt.Fprintf(os.Stderr, "Example: fexcel -sheet Data -numregs A2 -posregs D2 spreadsheet.xlsx 127.0.0.101 127.0.0.102\n\n")
+	fmt.Fprintf(os.Stderr, "Example: fexcel -sheet Data -numregs A2 -posregs D2 -timeout 1000 spreadsheet.xlsx 127.0.0.101 127.0.0.102\n\n")
 	fmt.Fprintf(os.Stderr, "Options:\n")
 	flag.PrintDefaults()
 	os.Exit(1)
@@ -52,6 +55,7 @@ func init() {
 	flag.StringVar(&cfg.Aouts, "aouts", "", "start cell of analog output ids")
 	flag.StringVar(&cfg.Sregs, "sregs", "", "start cell of string register ids")
 	flag.StringVar(&cfg.Flags, "flags", "", "start cell of flag ids")
+	flag.IntVar(&cfg.Timeout, "timeout", 500, "timeout value in milliseconds")
 }
 
 func check(err error) {

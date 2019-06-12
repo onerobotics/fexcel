@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/onerobotics/comtool"
@@ -29,6 +30,7 @@ type Config struct {
 	Aouts   string
 	Sregs   string
 	Flags   string
+	Timeout int // milliseconds
 }
 
 type commenter struct {
@@ -207,7 +209,7 @@ func (c *commenter) processColumn(startCell string, fCode comtool.FunctionCode, 
 			c.warn("Comment in cell %s truncated from '%s' to '%s'. (%d > %d)\n", cellName, oldComment, comment, len(oldComment), maxLength)
 		}
 
-		err = comtool.Set(fCode, id, comment, host)
+		err = comtool.Set(fCode, id, comment, host, time.Duration(time.Duration(c.Config.Timeout)*time.Millisecond))
 		if err != nil {
 			return count, err
 		}
