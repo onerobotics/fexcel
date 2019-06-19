@@ -17,7 +17,7 @@ const (
 )
 
 type Config struct {
-	Numregs string
+	Numregs string // e.g. A2 or SheetName:A2
 	Posregs string
 	Ualms   string
 	Rins    string
@@ -35,40 +35,40 @@ type Config struct {
 
 type commenter struct {
 	Config
-	SheetName string
-	Offset    int
+	DefaultSheetName string
+	Offset           int
 
 	xlsx *excelize.File
 }
 
-func New(filename string, sheetName string, offset int, cfg Config) (*commenter, error) {
+func New(filename string, defaultSheet string, offset int, cfg Config) (*commenter, error) {
 	xlsx, err := excelize.OpenFile(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	index := xlsx.GetSheetIndex(sheetName)
+	index := xlsx.GetSheetIndex(defaultSheet)
 	if index == 0 {
-		return nil, fmt.Errorf("Could not find sheet with name '%s' in file: %s\n", sheetName, filename)
+		return nil, fmt.Errorf("Could not find sheet with name '%s' in file: %s\n", defaultSheet, filename)
 	}
 
 	c := &commenter{
-		Config:    cfg,
-		SheetName: sheetName,
-		Offset:    offset,
+		Config:           cfg,
+		DefaultSheetName: defaultSheet,
+		Offset:           offset,
 	}
 	c.xlsx = xlsx
 
 	return c, nil
 }
 
-func (c *commenter) getIdAndComment(col, row int) (id int, comment string, err error) {
+func (c *commenter) getIdAndComment(sheetName string, col, row int) (id int, comment string, err error) {
 	axis, err := excelize.CoordinatesToCellName(col, row)
 	if err != nil {
 		return
 	}
 
-	value, err := c.xlsx.GetCellValue(c.SheetName, axis)
+	value, err := c.xlsx.GetCellValue(sheetName, axis)
 	if err != nil {
 		return
 	}
@@ -83,7 +83,7 @@ func (c *commenter) getIdAndComment(col, row int) (id int, comment string, err e
 		return
 	}
 
-	comment, err = c.xlsx.GetCellValue(c.SheetName, axis)
+	comment, err = c.xlsx.GetCellValue(sheetName, axis)
 	if err != nil {
 		return
 	}
@@ -180,18 +180,43 @@ func (c *commenter) warn(format string, args ...interface{}) {
 	fmt.Printf("WARNING: "+format, args...)
 }
 
+// cellString may be A2 or SheetName:A2
+func (c *commenter) parseStartCell(cellString string) (sheetName string, cellName string, err error) {
+	parts := strings.Split(cellString, ":")
+	if len(parts) > 2 {
+		err = fmt.Errorf("Invalid cell string: `%s`", cellString)
+		return
+	}
+
+	if len(parts) == 1 {
+		sheetName = c.DefaultSheetName
+		cellName = cellString
+		return
+	}
+
+	sheetName = parts[0]
+	cellName = parts[1]
+
+	return
+}
+
 func (c *commenter) processColumn(startCell string, fCode comtool.FunctionCode, host string, maxLength int) (count int, err error) {
 	if startCell == "" {
 		return
 	}
 
-	col, row, err := excelize.CellNameToCoordinates(startCell)
+	sheetName, cellName, err := c.parseStartCell(startCell)
+	if err != nil {
+		return
+	}
+
+	col, row, err := excelize.CellNameToCoordinates(cellName)
 	if err != nil {
 		return
 	}
 
 	for {
-		id, comment, err := c.getIdAndComment(col, row)
+		id, comment, err := c.getIdAndComment(sheetName, col, row)
 		if err != nil {
 			break
 		}
