@@ -16,7 +16,7 @@ Make sure KAREL is unlocked under `Setup > Host Comm > HTTP`.
 | -------- | ----------- |
 | -sheet   | the name of the default sheet (default Sheet1) |
 | -offset  | number of columns to shift between id and comments (default 1) |
-| -timeout | how long to wait for robot to response in milliseconds (default 500) |
+| -timeout | how long to wait for robot(s) to respond in milliseconds (default 500) |
 | -numregs | start cell of numeric register definitions |
 | -posregs | start cell of position register definitions |
 | -ualms   | start cell of user alarm definitions | 
