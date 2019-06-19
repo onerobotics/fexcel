@@ -32,7 +32,7 @@ Make sure KAREL is unlocked under `Setup > Host Comm > HTTP`.
 | -flags   | start cell of flag definitions |
 
 Note that start cell flags can be optionally prefixed with a sheet name that
-overrides the default `-sheet` parameter. (e.g. -numregs Data:A2)
+overrides the default `-sheet` parameter. (e.g. `-numregs Data:A2`)
 
 ## Details
 
