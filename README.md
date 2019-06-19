@@ -8,14 +8,15 @@ Make sure KAREL is unlocked under `Setup > Host Comm > HTTP`.
 
     fexcel [options] filename host(s)...
 
-    > ./fexcel -sheet Data -numregs A2 -posregs D2 spreadsheet.xlsx 127.0.0.101 127.0.0.102
+    > ./fexcel -sheet Data -numregs A2 -posregs D2 -dins IO:A2 spreadsheet.xlsx 127.0.0.101 127.0.0.102
 
 ## Options
 
 | Option   | Description |
 | -------- | ----------- |
-| -sheet   | the name of the sheet (default Sheet1) |
+| -sheet   | the name of the default sheet (default Sheet1) |
 | -offset  | number of columns to shift between id and comments (default 1) |
+| -timeout | how long to wait for robot to response in milliseconds (default 500) |
 | -numregs | start cell of numeric register definitions |
 | -posregs | start cell of position register definitions |
 | -ualms   | start cell of user alarm definitions | 
@@ -30,6 +31,9 @@ Make sure KAREL is unlocked under `Setup > Host Comm > HTTP`.
 | -sregs   | start cell of string register definitions |
 | -flags   | start cell of flag definitions |
 
+Note that start cell flags can be optionally prefixed with a sheet name that
+overrides the default `-sheet` parameter. (e.g. -numregs Data:A2)
+
 ## Details
 
 fexcel assumes that your spreadsheet has indices for a given item that start
@@ -38,7 +42,7 @@ provided plus the offset flag (default 1).
 
 e.g. in the above example, the numeric register ids start in cell A2 with
 comments starting in cell B2. Position registers ids start in cell D2 with
-comments starting in E2.
+comments starting in E2. Digital input ids start in cell A2 on the IO sheet.
 
 If you have data spread out on different sheets, you will have to run fexcel
 multiple times: once for each sheet.
