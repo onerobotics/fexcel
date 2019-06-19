@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/360EntSecGroup-Skylar/excelize"
@@ -37,11 +38,12 @@ type commenter struct {
 	Config
 	DefaultSheetName string
 	Offset           int
+	Hosts            []string
 
 	xlsx *excelize.File
 }
 
-func New(filename string, defaultSheet string, offset int, cfg Config) (*commenter, error) {
+func New(filename string, defaultSheet string, offset int, cfg Config, hosts []string) (*commenter, error) {
 	xlsx, err := excelize.OpenFile(filename)
 	if err != nil {
 		return nil, err
@@ -56,6 +58,7 @@ func New(filename string, defaultSheet string, offset int, cfg Config) (*comment
 		Config:           cfg,
 		DefaultSheetName: defaultSheet,
 		Offset:           offset,
+		Hosts:            hosts,
 	}
 	c.xlsx = xlsx
 
@@ -91,89 +94,90 @@ func (c *commenter) getIdAndComment(sheetName string, col, row int) (id int, com
 	return
 }
 
-func (c *commenter) Update(host string) error {
-	fmt.Printf("Updating %s...\n", host)
-	fmt.Println("----------------------------")
+type Result struct {
+	Flags   int
+	Numregs int
+	Posregs int
+	Sregs   int
+	Ualms   int
 
-	count, err := c.processColumn(c.Config.Numregs, comtool.NUMREG, host, MaxDataLength)
+	Ains  int
+	Aouts int
+	Dins  int
+	Douts int
+	Gins  int
+	Gouts int
+	Rins  int
+	Routs int
+}
+
+func (c *commenter) Update() (result Result, err error) {
+	result.Numregs, err = c.processColumn(c.Config.Numregs, comtool.NUMREG, MaxDataLength)
 	if err != nil {
-		return err
+		return
 	}
-	fmt.Printf("Updated %d numeric registers\n", count)
 
-	count, err = c.processColumn(c.Config.Posregs, comtool.POSREG, host, MaxDataLength)
+	result.Posregs, err = c.processColumn(c.Config.Posregs, comtool.POSREG, MaxDataLength)
 	if err != nil {
-		return err
+		return
 	}
-	fmt.Printf("Updated %d position registers\n", count)
 
-	count, err = c.processColumn(c.Config.Ualms, comtool.UALM, host, MaxUalmLength)
+	result.Ualms, err = c.processColumn(c.Config.Ualms, comtool.UALM, MaxUalmLength)
 	if err != nil {
-		return err
+		return
 	}
-	fmt.Printf("Updated %d user alarms\n", count)
 
-	count, err = c.processColumn(c.Config.Rins, comtool.RIN, host, MaxIOLength)
+	result.Rins, err = c.processColumn(c.Config.Rins, comtool.RIN, MaxIOLength)
 	if err != nil {
-		return err
+		return
 	}
-	fmt.Printf("Updated %d robot inputs\n", count)
 
-	count, err = c.processColumn(c.Config.Routs, comtool.ROUT, host, MaxIOLength)
+	result.Routs, err = c.processColumn(c.Config.Routs, comtool.ROUT, MaxIOLength)
 	if err != nil {
-		return err
+		return
 	}
-	fmt.Printf("Updated %d robot outputs\n", count)
 
-	count, err = c.processColumn(c.Config.Dins, comtool.DIN, host, MaxIOLength)
+	result.Dins, err = c.processColumn(c.Config.Dins, comtool.DIN, MaxIOLength)
 	if err != nil {
-		return err
+		return
 	}
-	fmt.Printf("Updated %d digital inputs\n", count)
 
-	count, err = c.processColumn(c.Config.Douts, comtool.DOUT, host, MaxIOLength)
+	result.Douts, err = c.processColumn(c.Config.Douts, comtool.DOUT, MaxIOLength)
 	if err != nil {
-		return err
+		return
 	}
-	fmt.Printf("Updated %d digital outputs\n", count)
 
-	count, err = c.processColumn(c.Config.Gins, comtool.GIN, host, MaxIOLength)
+	result.Gins, err = c.processColumn(c.Config.Gins, comtool.GIN, MaxIOLength)
 	if err != nil {
-		return err
+		return
 	}
-	fmt.Printf("Updated %d group inputs\n", count)
 
-	count, err = c.processColumn(c.Config.Gouts, comtool.GOUT, host, MaxIOLength)
+	result.Gouts, err = c.processColumn(c.Config.Gouts, comtool.GOUT, MaxIOLength)
 	if err != nil {
-		return err
+		return
 	}
-	fmt.Printf("Updated %d group outputs\n", count)
 
-	count, err = c.processColumn(c.Config.Ains, comtool.AIN, host, MaxIOLength)
+	result.Ains, err = c.processColumn(c.Config.Ains, comtool.AIN, MaxIOLength)
 	if err != nil {
-		return err
+		return
 	}
-	fmt.Printf("Updated %d analog inputs\n", count)
 
-	count, err = c.processColumn(c.Config.Aouts, comtool.AOUT, host, MaxIOLength)
+	result.Aouts, err = c.processColumn(c.Config.Aouts, comtool.AOUT, MaxIOLength)
 	if err != nil {
-		return err
+		return
 	}
-	fmt.Printf("Updated %d analog outputs\n", count)
 
-	count, err = c.processColumn(c.Config.Sregs, comtool.SREG, host, MaxDataLength)
+	result.Sregs, err = c.processColumn(c.Config.Sregs, comtool.SREG, MaxDataLength)
 	if err != nil {
-		return err
+		return
 	}
-	fmt.Printf("Updated %d string registers\n", count)
 
-	count, err = c.processColumn(c.Config.Flags, comtool.FLAG, host, MaxIOLength)
+	result.Flags, err = c.processColumn(c.Config.Flags, comtool.FLAG, MaxIOLength)
 	if err != nil {
-		return err
+		return
 	}
-	fmt.Printf("Updated %d flags\n", count)
 
-	return nil
+	return
 }
 
 func (c *commenter) warn(format string, args ...interface{}) {
@@ -200,7 +204,23 @@ func (c *commenter) parseStartCell(cellString string) (sheetName string, cellNam
 	return
 }
 
-func (c *commenter) processColumn(startCell string, fCode comtool.FunctionCode, host string, maxLength int) (count int, err error) {
+func (c *commenter) truncateComment(comment string, maxLength int, row int, col int) (string, error) {
+	if len(comment) > maxLength {
+		cellName, err := excelize.CoordinatesToCellName(col+c.Offset, row)
+		if err != nil {
+			return "", err
+		}
+
+		oldComment := comment
+		comment := comment[:maxLength]
+
+		c.warn("Comment in cell %s truncated from '%s' to '%s'. (%d > %d)\n", cellName, oldComment, comment, len(oldComment), maxLength)
+	}
+
+	return comment, nil
+}
+
+func (c *commenter) processColumn(startCell string, fCode comtool.FunctionCode, maxLength int) (count int, err error) {
 	if startCell == "" {
 		return
 	}
@@ -221,22 +241,33 @@ func (c *commenter) processColumn(startCell string, fCode comtool.FunctionCode, 
 			break
 		}
 
-		comment = strings.TrimSpace(comment)
-		if len(comment) > maxLength {
-			cellName, err := excelize.CoordinatesToCellName(col+c.Offset, row)
-			if err != nil {
-				return count, err
-			}
-
-			oldComment := comment
-			comment := comment[:maxLength]
-
-			c.warn("Comment in cell %s truncated from '%s' to '%s'. (%d > %d)\n", cellName, oldComment, comment, len(oldComment), maxLength)
-		}
-
-		err = comtool.Set(fCode, id, comment, host, time.Duration(time.Duration(c.Config.Timeout)*time.Millisecond))
+		comment, err = c.truncateComment(strings.TrimSpace(comment), maxLength, row, col)
 		if err != nil {
 			return count, err
+		}
+
+		var wg sync.WaitGroup
+		errors := make(chan error, len(c.Hosts))
+		for _, host := range c.Hosts {
+			wg.Add(1)
+			go func(host string, wg *sync.WaitGroup) {
+				defer wg.Done()
+
+				err := comtool.Set(fCode, id, comment, host, time.Duration(time.Duration(c.Config.Timeout)*time.Millisecond))
+				if err != nil {
+					errors <- fmt.Errorf("%s: %s", host, err)
+				}
+			}(host, &wg)
+		}
+		wg.Wait()
+		close(errors)
+
+		if len(errors) > 0 {
+			s := ""
+			for err := range errors {
+				s = fmt.Sprintf("%s\n", err)
+			}
+			return count, fmt.Errorf("%s", s)
 		}
 
 		count++

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -13,11 +14,12 @@ import (
 	"github.com/onerobotics/fexcel/commenter"
 )
 
-const VERSION = "1.0.0"
+const VERSION = "1.1.0"
 
 var (
 	defaultSheet string
 	offset       int
+	noUpdate     bool
 	cfg          commenter.Config
 )
 
@@ -27,7 +29,7 @@ const logo = `  __                  _
 |  _/ _ \ \/ / __/ _ \ |
 | ||  __/>  < (_|  __/ |
 |_| \___/_/\_\___\___|_|
-                  v1.0.0
+                  v1.1.0
 
 by ONE Robotics Company
 www.onerobotics.com
@@ -42,8 +44,8 @@ type releaseResponse struct {
 	} `json:"assets"`
 }
 
-func checkForUpdates() error {
-	fmt.Fprintf(os.Stderr, "\nChecking for updates... ")
+func checkForUpdates(w io.Writer) error {
+	fmt.Fprintf(w, "\nChecking for updates... ")
 
 	githubClient := http.Client{
 		Timeout: 2 * time.Second,
@@ -82,12 +84,12 @@ func checkForUpdates() error {
 	}
 
 	if latestVersion.GT(currentVersion) {
-		fmt.Fprintf(os.Stderr, "A new version is available!\n")
-		fmt.Fprintf(os.Stderr, "  The latest version is: %s. You are on v%s\n", response.TagName, VERSION)
-		fmt.Fprintf(os.Stderr, "  You can view the latest release here:\n    %s\n", response.Url)
-		fmt.Fprintf(os.Stderr, "  You can download the latest release here:\n    %s\n", response.Assets[0].DownloadUrl)
+		fmt.Fprintf(w, "A new version is available!\n")
+		fmt.Fprintf(w, "  The latest version is: %s. You are on v%s\n", response.TagName, VERSION)
+		fmt.Fprintf(w, "  You can view the latest release here:\n    %s\n", response.Url)
+		fmt.Fprintf(w, "  You can download the latest release here:\n    %s\n", response.Assets[0].DownloadUrl)
 	} else {
-		fmt.Fprintf(os.Stderr, "You are on the latest version: v%s\n", VERSION)
+		fmt.Fprintf(w, "You are on the latest version: v%s\n", VERSION)
 	}
 
 	return nil
@@ -101,7 +103,7 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "Options:\n")
 	flag.PrintDefaults()
 
-	err := checkForUpdates()
+	err := checkForUpdates(os.Stderr)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "\n  Error: %s\n", err.Error())
 	}
@@ -112,6 +114,7 @@ func usage() {
 func init() {
 	flag.StringVar(&defaultSheet, "sheet", "Sheet1", "the name of the default sheet to look at if the sheet is not specified for an item")
 	flag.IntVar(&offset, "offset", 1, "column offset from ids to comments")
+	flag.BoolVar(&noUpdate, "noupdate", false, "don't check for updates to fexcel")
 	flag.StringVar(&cfg.Numregs, "numregs", "", "start cell of numeric register ids (e.g. A2 or Sheet2:A2)")
 	flag.StringVar(&cfg.Posregs, "posregs", "", "start cell of position register ids (e.g. A2 or Sheet2:A2)")
 	flag.StringVar(&cfg.Ualms, "ualms", "", "start cell of user alarm ids (e.g. A2 or Sheet2:A2)")
@@ -158,13 +161,34 @@ func main() {
 
 	fmt.Printf(logo)
 
-	c, err := commenter.New(filename, defaultSheet, offset, cfg)
+	c, err := commenter.New(filename, defaultSheet, offset, cfg, hosts)
 	check(err)
 
-	for _, host := range hosts {
-		err = c.Update(host)
-		check(err)
+	result, err := c.Update()
+	if err != nil {
+		fmt.Printf("Error: %s\n", err)
+		os.Exit(1)
+	}
 
-		fmt.Println()
+	fmt.Printf("-------------------------------------\n")
+	fmt.Printf("Hosts:\n")
+	for _, host := range hosts {
+		fmt.Printf("  %s\n", host)
+	}
+	fmt.Printf("-------------------------------------\n")
+
+	fmt.Printf("Data              | I/O       In  Out\n")
+	fmt.Printf("------------------|------------------\n")
+	fmt.Printf("Flags        %4d | Analog  %4d %4d\n", result.Flags, result.Ains, result.Aouts)
+	fmt.Printf("Numregs      %4d | Digital %4d %4d\n", result.Numregs, result.Dins, result.Douts)
+	fmt.Printf("Posregs      %4d | Group   %4d %4d\n", result.Posregs, result.Gins, result.Gouts)
+	fmt.Printf("Sregs        %4d | Robot   %4d %4d\n", result.Sregs, result.Rins, result.Routs)
+	fmt.Printf("UALMs        %4d |\n", result.Ualms)
+
+	if !noUpdate {
+		err = checkForUpdates(os.Stdout)
+		if err != nil {
+			fmt.Printf("\n  Error: %s\n", err.Error())
+		}
 	}
 }
