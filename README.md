@@ -43,6 +43,3 @@ provided plus the offset flag (default 1).
 e.g. in the above example, the numeric register ids start in cell A2 with
 comments starting in cell B2. Position registers ids start in cell D2 with
 comments starting in E2. Digital input ids start in cell A2 on the IO sheet.
-
-If you have data spread out on different sheets, you will have to run fexcel
-multiple times: once for each sheet.
