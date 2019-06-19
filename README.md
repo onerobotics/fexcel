@@ -2,6 +2,8 @@
 
 Utility for setting FANUC robot comments from an Excel spreadsheet.
 
+Download the latest release [here](https://github.com/onerobotics/fexcel/releases/latest).
+
 ## Usage
 
 Make sure KAREL is unlocked under `Setup > Host Comm > HTTP`.
