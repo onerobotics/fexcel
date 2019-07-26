@@ -34,5 +34,42 @@ func TestParseStartCell(t *testing.T) {
 	if err.Error() != "Invalid cell string: `invalid:cell:spec`" {
 		t.Errorf("got %s, want %s", err.Error(), "Invalid cell string: `invalid:cell:spec`")
 	}
+}
 
+func TestWithSpreadsheet(t *testing.T) {
+	var cfg Config
+	cfg.Numregs = "A2"
+
+	c, err := New("testdata/test.xlsx", "Sheet1", 1, cfg, nil)
+	if err != nil {
+		t.Error(err)
+	}
+
+	result, err := c.Update()
+	if err != nil {
+		t.Error(err)
+	}
+
+	if result.Numregs != 10 {
+		t.Errorf("got %d, want %d", result.Numregs, 10)
+	}
+}
+
+func TestWithSpreadsheetFormatting(t *testing.T) {
+	var cfg Config
+	cfg.Numregs = "A2"
+
+	c, err := New("testdata/test.xlsx", "Formatting", 1, cfg, nil)
+	if err != nil {
+		t.Error(err)
+	}
+
+	result, err := c.Update()
+	if err != nil {
+		t.Error(err)
+	}
+
+	if result.Numregs != 10 {
+		t.Errorf("got %d, want %d", result.Numregs, 10)
+	}
 }
