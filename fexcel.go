@@ -1,134 +1,92 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
-	"github.com/blang/semver"
-	"github.com/onerobotics/fexcel/commenter"
+	"github.com/onerobotics/fexcel/excel"
+	"github.com/onerobotics/fexcel/fanuc"
+	"github.com/onerobotics/fexcel/fexcel"
 )
 
-const VERSION = "1.1.0"
-
-var (
+type config struct {
+	numregs      string // e.g. A2 or Sheet1:A2
+	posregs      string
+	ualms        string
+	rins         string
+	routs        string
+	dins         string
+	douts        string
+	gins         string
+	gouts        string
+	ains         string
+	aouts        string
+	sregs        string
+	flags        string
+	timeout      int
 	defaultSheet string
 	offset       int
 	noUpdate     bool
-	cfg          commenter.Config
+}
+
+var (
+	cfg config
 )
 
-const logo = `  __                  _
+func logo() string {
+	return fmt.Sprintf(`  __                  _
  / _|                | |
 | |_ _____  _____ ___| |
 |  _/ _ \ \/ / __/ _ \ |
 | ||  __/>  < (_|  __/ |
 |_| \___/_/\_\___\___|_|
-                  v1.1.0
+                  %s
 
 by ONE Robotics Company
 www.onerobotics.com
 
-`
-
-type releaseResponse struct {
-	Url     string `json:"url"`
-	TagName string `json:"tag_name"`
-	Assets  []struct {
-		DownloadUrl string `json:"browser_download_url"`
-	} `json:"assets"`
-}
-
-func checkForUpdates(w io.Writer) error {
-	fmt.Fprintf(w, "\nChecking for updates... ")
-
-	githubClient := http.Client{
-		Timeout: 2 * time.Second,
-	}
-
-	req, err := http.NewRequest("GET", "https://api.github.com/repos/onerobotics/fexcel/releases/latest", nil)
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("User-Agent", "fexcel-v"+VERSION)
-
-	res, err := githubClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	var response releaseResponse
-	err = json.NewDecoder(res.Body).Decode(&response)
-	if err != nil {
-		return err
-	}
-
-	if len(response.Assets) != 1 {
-		return fmt.Errorf("Invalid # of assets: %d", len(response.Assets))
-	}
-
-	currentVersion, err := semver.Make(VERSION)
-	if err != nil {
-		return err
-	}
-	latestVersion, err := semver.Make(response.TagName[1:]) // tag has v prefix
-	if err != nil {
-		return err
-	}
-
-	if latestVersion.GT(currentVersion) {
-		fmt.Fprintf(w, "A new version is available!\n")
-		fmt.Fprintf(w, "  The latest version is: %s. You are on v%s\n", response.TagName, VERSION)
-		fmt.Fprintf(w, "  You can view the latest release here:\n    %s\n", response.Url)
-		fmt.Fprintf(w, "  You can download the latest release here:\n    %s\n", response.Assets[0].DownloadUrl)
-	} else {
-		fmt.Fprintf(w, "You are on the latest version: v%s\n", VERSION)
-	}
-
-	return nil
+`, fexcel.Version)
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, logo)
-	fmt.Fprintf(os.Stderr, "Usage: fexcel [options] filename host(s)...\n\n")
+	fmt.Fprintf(os.Stderr, logo())
+	fmt.Fprintf(os.Stderr, "Usage: fexcel [options] file.xlsx hosts...\n\n")
 
 	fmt.Fprintf(os.Stderr, "Example: fexcel -sheet Data -numregs A2 -posregs Sheet2:D2 -timeout 1000 spreadsheet.xlsx 127.0.0.101 127.0.0.102\n\n")
 	fmt.Fprintf(os.Stderr, "Options:\n")
 	flag.PrintDefaults()
 
-	err := checkForUpdates(os.Stderr)
+	err := fexcel.CheckForUpdates(os.Stderr)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "\n  Error: %s\n", err.Error())
+		fmt.Fprintf(os.Stderr, "failed to get latest version id from GitHub.\n")
 	}
 
 	os.Exit(1)
 }
 
 func init() {
-	flag.StringVar(&defaultSheet, "sheet", "Sheet1", "the name of the default sheet to look at if the sheet is not specified for an item")
-	flag.IntVar(&offset, "offset", 1, "column offset from ids to comments")
-	flag.BoolVar(&noUpdate, "noupdate", false, "don't check for updates to fexcel")
-	flag.StringVar(&cfg.Numregs, "numregs", "", "start cell of numeric register ids (e.g. A2 or Sheet2:A2)")
-	flag.StringVar(&cfg.Posregs, "posregs", "", "start cell of position register ids (e.g. A2 or Sheet2:A2)")
-	flag.StringVar(&cfg.Ualms, "ualms", "", "start cell of user alarm ids (e.g. A2 or Sheet2:A2)")
-	flag.StringVar(&cfg.Rins, "rins", "", "start cell of robot input ids (e.g. A2 or Sheet2:A2)")
-	flag.StringVar(&cfg.Routs, "routs", "", "start cell of robot output ids (e.g. A2 or Sheet2:A2)")
-	flag.StringVar(&cfg.Dins, "dins", "", "start cell of digital input ids (e.g. A2 or Sheet2:A2)")
-	flag.StringVar(&cfg.Douts, "douts", "", "start cell of digital output ids (e.g. A2 or Sheet2:A2)")
-	flag.StringVar(&cfg.Gins, "gins", "", "start cell of group input ids (e.g. A2 or Sheet2:A2)")
-	flag.StringVar(&cfg.Gouts, "gouts", "", "start cell of group output ids (e.g. A2 or Sheet2:A2)")
-	flag.StringVar(&cfg.Ains, "ains", "", "start cell of analog input ids (e.g. A2 or Sheet2:A2)")
-	flag.StringVar(&cfg.Aouts, "aouts", "", "start cell of analog output ids (e.g. A2 or Sheet2:A2)")
-	flag.StringVar(&cfg.Sregs, "sregs", "", "start cell of string register ids (e.g. A2 or Sheet2:A2)")
-	flag.StringVar(&cfg.Flags, "flags", "", "start cell of flag ids (e.g. A2 or Sheet2:A2)")
-	flag.IntVar(&cfg.Timeout, "timeout", 500, "timeout value in milliseconds")
+	flag.StringVar(&cfg.defaultSheet, "sheet", "Sheet1", "the name of the default sheet to look at if the sheet is not specified for an item")
+	flag.IntVar(&cfg.offset, "offset", 1, "column offset from ids to comments")
+	flag.BoolVar(&cfg.noUpdate, "noupdate", false, "don't check for updates to fexcel")
+	flag.IntVar(&cfg.timeout, "timeout", 500, "timeout value in milliseconds")
+
+	flag.StringVar(&cfg.numregs, "numregs", "", "start cell of numeric register ids (e.g. A2 or Sheet2:A2)")
+	flag.StringVar(&cfg.posregs, "posregs", "", "start cell of position register ids (e.g. A2 or Sheet2:A2)")
+	flag.StringVar(&cfg.ualms, "ualms", "", "start cell of user alarm ids (e.g. A2 or Sheet2:A2)")
+	flag.StringVar(&cfg.rins, "rins", "", "start cell of robot input ids (e.g. A2 or Sheet2:A2)")
+	flag.StringVar(&cfg.routs, "routs", "", "start cell of robot output ids (e.g. A2 or Sheet2:A2)")
+	flag.StringVar(&cfg.dins, "dins", "", "start cell of digital input ids (e.g. A2 or Sheet2:A2)")
+	flag.StringVar(&cfg.douts, "douts", "", "start cell of digital output ids (e.g. A2 or Sheet2:A2)")
+	flag.StringVar(&cfg.gins, "gins", "", "start cell of group input ids (e.g. A2 or Sheet2:A2)")
+	flag.StringVar(&cfg.gouts, "gouts", "", "start cell of group output ids (e.g. A2 or Sheet2:A2)")
+	flag.StringVar(&cfg.ains, "ains", "", "start cell of analog input ids (e.g. A2 or Sheet2:A2)")
+	flag.StringVar(&cfg.aouts, "aouts", "", "start cell of analog output ids (e.g. A2 or Sheet2:A2)")
+	flag.StringVar(&cfg.sregs, "sregs", "", "start cell of string register ids (e.g. A2 or Sheet2:A2)")
+	flag.StringVar(&cfg.flags, "flags", "", "start cell of flag ids (e.g. A2 or Sheet2:A2)")
 }
 
 func check(err error) {
@@ -136,6 +94,68 @@ func check(err error) {
 		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
+}
+
+func parseLocation(spec string) (sheet string, axis string, err error) {
+	if spec == "" {
+		return
+	}
+
+	parts := strings.Split(spec, ":")
+
+	switch len(parts) {
+	case 2:
+		sheet, axis = parts[0], parts[1]
+		return
+	case 1:
+		// e.g. A2
+		sheet = cfg.defaultSheet
+		axis = spec
+		return
+	}
+
+	err = fmt.Errorf("Invalid start cell specification: %q", spec)
+	return
+}
+
+func pluralize(word string, i int) string {
+	if i == 1 {
+		return word
+	} else {
+		return word + "s"
+	}
+}
+
+func setLocations(f *excel.File) error {
+	locationSpecs := []struct {
+		dataType fanuc.DataType
+		s        string
+	}{
+		{fanuc.Numreg, cfg.numregs},
+		{fanuc.Posreg, cfg.posregs},
+		{fanuc.Ualm, cfg.ualms},
+		{fanuc.Rin, cfg.rins},
+		{fanuc.Rout, cfg.routs},
+		{fanuc.Din, cfg.dins},
+		{fanuc.Dout, cfg.douts},
+		{fanuc.Gin, cfg.gins},
+		{fanuc.Gout, cfg.gouts},
+		{fanuc.Ain, cfg.ains},
+		{fanuc.Aout, cfg.aouts},
+		{fanuc.Sreg, cfg.sregs},
+		{fanuc.Flag, cfg.flags},
+	}
+
+	for _, spec := range locationSpecs {
+		sheet, axis, err := parseLocation(spec.s)
+		if err != nil {
+			return err
+		}
+
+		f.SetLocation(spec.dataType, axis, sheet)
+	}
+
+	return nil
 }
 
 func main() {
@@ -146,49 +166,86 @@ func main() {
 		usage()
 	}
 
-	filename := args[0]
-	if filename == "" {
+	fpath := args[0]
+	if fpath == "" {
 		usage()
 	}
 
-	ext := filepath.Ext(filename)
+	ext := filepath.Ext(fpath)
 	if ext != ".xlsx" {
-		fmt.Fprintf(os.Stderr, "Error: fexcel only supports .xlsx files generated by Excel 2007 or later")
+		fmt.Fprintf(os.Stderr, "Error: fexcel only supports .xlsx files generated by Excel 2007 or later (you provided a %s file)", ext)
 		os.Exit(1)
 	}
 
 	hosts := args[1:]
 
-	fmt.Printf(logo)
+	fmt.Printf(logo())
 
-	c, err := commenter.New(filename, defaultSheet, offset, cfg, hosts)
+	f, err := excel.NewFile(fpath, cfg.offset)
 	check(err)
 
-	result, err := c.Update()
-	if err != nil {
-		fmt.Printf("Error: %s\n", err)
-		os.Exit(1)
+	err = setLocations(f)
+	check(err)
+
+	c := fanuc.NewMultiUpdater(hosts, &fanuc.CommentToolUpdater{time.Duration(cfg.timeout) * time.Millisecond})
+
+	dataTypes := []fanuc.DataType{
+		fanuc.Numreg,
+		fanuc.Posreg,
+		fanuc.Ualm,
+		fanuc.Rin,
+		fanuc.Rout,
+		fanuc.Din,
+		fanuc.Dout,
+		fanuc.Gin,
+		fanuc.Gout,
+		fanuc.Ain,
+		fanuc.Aout,
+		fanuc.Sreg,
+		fanuc.Flag,
 	}
 
-	fmt.Printf("-------------------------------------\n")
-	fmt.Printf("Hosts:\n")
-	for _, host := range hosts {
-		fmt.Printf("  %s\n", host)
+	var definitions []fanuc.Definition
+	for _, d := range dataTypes {
+		if f.Locations[d].Axis == "" || f.Locations[d].Sheet == "" {
+			continue
+		}
+
+		defs, err := f.Definitions(d)
+		check(err)
+
+		fmt.Printf("Found %d %ss.\n", len(defs), d.VerboseName())
+
+		definitions = append(definitions, defs...)
 	}
-	fmt.Printf("-------------------------------------\n")
 
-	fmt.Printf("Data              | I/O       In  Out\n")
-	fmt.Printf("------------------|------------------\n")
-	fmt.Printf("Flags        %4d | Analog  %4d %4d\n", result.Flags, result.Ains, result.Aouts)
-	fmt.Printf("Numregs      %4d | Digital %4d %4d\n", result.Numregs, result.Dins, result.Douts)
-	fmt.Printf("Posregs      %4d | Group   %4d %4d\n", result.Posregs, result.Gins, result.Gouts)
-	fmt.Printf("Sregs        %4d | Robot   %4d %4d\n", result.Sregs, result.Rins, result.Routs)
-	fmt.Printf("UALMs        %4d |\n", result.Ualms)
+	fmt.Printf("\nUpdating %d comments on %d %s... ", len(definitions), len(hosts), pluralize("host", len(hosts)))
 
-	if !noUpdate {
-		err = checkForUpdates(os.Stdout)
-		if err != nil {
-			fmt.Printf("\n  Error: %s\n", err.Error())
+	startTime := time.Now()
+
+	err = c.Update(definitions)
+	check(err)
+
+	fmt.Printf("finished in %s.\n\n", time.Since(startTime))
+
+	for _, warning := range c.Warnings {
+		fmt.Printf("[warning] %s\n", warning)
+	}
+
+	exitCode := 0
+	for host, errors := range c.Errors {
+		for _, err := range errors {
+			fmt.Printf("[error] %s: %s\n", host, err)
+			exitCode = 1
 		}
 	}
+
+	if !cfg.noUpdate {
+		err = fexcel.CheckForUpdates(os.Stdout)
+		if err != nil {
+			fmt.Printf("failed to get latest version id from GitHub.\n")
+		}
+	}
+
+	os.Exit(exitCode)
 }
