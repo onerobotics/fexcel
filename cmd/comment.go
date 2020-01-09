@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"net"
 	"path/filepath"
-	"strings"
 	"time"
 
-	"github.com/onerobotics/fexcel/excel"
 	"github.com/onerobotics/fexcel/fanuc"
 	"github.com/onerobotics/fexcel/fexcel"
 	"github.com/spf13/cobra"
@@ -34,7 +32,7 @@ func init() {
 
 func validateArgs(cmd *cobra.Command, args []string) error {
 	if len(args) < 2 {
-		return errors.New("requires a spreadsheet and at least one host")
+		return errors.New("requires a spreadsheet and at least one host IP address")
 	}
 	fpath := args[0]
 	ext := filepath.Ext(fpath)
@@ -58,40 +56,15 @@ func main(cmd *cobra.Command, args []string) error {
 	fpath := args[0]
 	hosts := args[1:]
 
-	f, err := excel.NewFile(fpath, globalFlags.Offset)
-	if err != nil {
-		return err
-	}
-
-	err = setLocations(f)
+	f, err := fexcel.PrepareFile(fpath, globalCfg)
 	if err != nil {
 		return err
 	}
 
 	c := fanuc.NewMultiUpdater(hosts, &fanuc.CommentToolUpdater{time.Duration(timeout) * time.Millisecond})
 
-	dataTypes := []fanuc.DataType{
-		fanuc.Numreg,
-		fanuc.Posreg,
-		fanuc.Ualm,
-		fanuc.Rin,
-		fanuc.Rout,
-		fanuc.Din,
-		fanuc.Dout,
-		fanuc.Gin,
-		fanuc.Gout,
-		fanuc.Ain,
-		fanuc.Aout,
-		fanuc.Sreg,
-		fanuc.Flag,
-	}
-
 	var definitions []fanuc.Definition
-	for _, d := range dataTypes {
-		if f.Locations[d].Axis == "" || f.Locations[d].Sheet == "" {
-			continue
-		}
-
+	for d, _ := range f.Locations {
 		defs, err := f.Definitions(d)
 		if err != nil {
 			return err
@@ -102,7 +75,7 @@ func main(cmd *cobra.Command, args []string) error {
 		definitions = append(definitions, defs...)
 	}
 
-	fmt.Printf("\nUpdating %d comments on %d %s... ", len(definitions), len(hosts), pluralize("host", len(hosts)))
+	fmt.Printf("\nUpdating %d comments on %d %s... ", len(definitions), len(hosts), fexcel.Pluralize("host", len(hosts)))
 
 	startTime := time.Now()
 
@@ -125,68 +98,6 @@ func main(cmd *cobra.Command, args []string) error {
 
 	if len(c.Errors) > 0 {
 		return fmt.Errorf("Finished with %d errors", len(c.Errors))
-	}
-
-	return nil
-}
-
-func parseLocation(spec string) (sheet string, axis string, err error) {
-	if spec == "" {
-		return
-	}
-
-	parts := strings.Split(spec, ":")
-
-	switch len(parts) {
-	case 2:
-		sheet, axis = parts[0], parts[1]
-		return
-	case 1:
-		// e.g. A2
-		sheet = globalFlags.Sheet
-		axis = spec
-		return
-	}
-
-	err = fmt.Errorf("Invalid start cell specification: %q", spec)
-	return
-}
-
-func pluralize(word string, i int) string {
-	if i == 1 {
-		return word
-	} else {
-		return word + "s"
-	}
-}
-
-func setLocations(f *excel.File) error {
-	locationSpecs := []struct {
-		dataType fanuc.DataType
-		s        string
-	}{
-		{fanuc.Numreg, globalFlags.Numregs},
-		{fanuc.Posreg, globalFlags.Posregs},
-		{fanuc.Ualm, globalFlags.Ualms},
-		{fanuc.Rin, globalFlags.Rins},
-		{fanuc.Rout, globalFlags.Routs},
-		{fanuc.Din, globalFlags.Dins},
-		{fanuc.Dout, globalFlags.Douts},
-		{fanuc.Gin, globalFlags.Gins},
-		{fanuc.Gout, globalFlags.Gouts},
-		{fanuc.Ain, globalFlags.Ains},
-		{fanuc.Aout, globalFlags.Aouts},
-		{fanuc.Sreg, globalFlags.Sregs},
-		{fanuc.Flag, globalFlags.Flags},
-	}
-
-	for _, spec := range locationSpecs {
-		sheet, axis, err := parseLocation(spec.s)
-		if err != nil {
-			return err
-		}
-
-		f.SetLocation(spec.dataType, axis, sheet)
 	}
 
 	return nil
