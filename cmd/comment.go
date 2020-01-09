@@ -13,7 +13,6 @@ import (
 )
 
 var (
-	// used for flags
 	timeout int
 )
 
