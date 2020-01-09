@@ -51,9 +51,9 @@ func validateArgs(cmd *cobra.Command, args []string) error {
 func main(cmd *cobra.Command, args []string) error {
 	fmt.Printf(fexcel.Logo())
 
-	hosts := args[1:]
+	fpath, hosts := args[0], args[1:]
 
-	f, err := fexcel.PrepareFile(args[0], globalCfg)
+	f, err := fexcel.PrepareFile(fpath, globalCfg)
 	if err != nil {
 		return err
 	}
