@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/onerobotics/fexcel/fanuc"
 	"github.com/onerobotics/fexcel/fexcel"
 	"github.com/spf13/cobra"
 )
@@ -58,9 +57,9 @@ func main(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	c := fanuc.NewMultiUpdater(hosts, &fanuc.CommentToolUpdater{time.Duration(timeout) * time.Millisecond})
+	c := fexcel.NewMultiUpdater(hosts, &fexcel.CommentToolUpdater{time.Duration(timeout) * time.Millisecond})
 
-	var definitions []fanuc.Definition
+	var definitions []fexcel.Definition
 	for d, _ := range f.Locations {
 		defs, err := f.Definitions(d)
 		if err != nil {

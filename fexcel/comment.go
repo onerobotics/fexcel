@@ -1,4 +1,4 @@
-package fanuc
+package fexcel
 
 import (
 	"fmt"
@@ -6,10 +6,11 @@ import (
 	"time"
 
 	"github.com/onerobotics/comtool"
+	fanuc "github.com/onerobotics/go-fanuc"
 )
 
 type Definition struct {
-	DataType
+	Type    fanuc.Type
 	Id      int
 	Comment string
 }
@@ -23,7 +24,7 @@ type CommentToolUpdater struct {
 }
 
 func (c *CommentToolUpdater) Update(d Definition, host string) error {
-	fcode := codeForDataType(d.DataType)
+	fcode := codeForType(d.Type)
 	return comtool.Set(fcode, d.Id, d.Comment, host, c.Timeout)
 }
 
@@ -52,45 +53,45 @@ func NewMultiUpdater(hosts []string, u Updater) *MultiUpdater {
 	return m
 }
 
-// translate between fanuc.DataType and comtool.FunctionCode
-func codeForDataType(d DataType) comtool.FunctionCode {
+// translate between fanuc.Type and comtool.FunctionCode
+func codeForType(d fanuc.Type) comtool.FunctionCode {
 	switch d {
-	case Numreg:
+	case fanuc.Numreg:
 		return comtool.NUMREG
-	case Posreg:
+	case fanuc.Posreg:
 		return comtool.POSREG
-	case Ualm:
+	case fanuc.Ualm:
 		return comtool.UALM
-	case Rin:
+	case fanuc.Rin:
 		return comtool.RIN
-	case Rout:
+	case fanuc.Rout:
 		return comtool.ROUT
-	case Din:
+	case fanuc.Din:
 		return comtool.DIN
-	case Dout:
+	case fanuc.Dout:
 		return comtool.DOUT
-	case Gin:
+	case fanuc.Gin:
 		return comtool.GIN
-	case Gout:
+	case fanuc.Gout:
 		return comtool.GOUT
-	case Ain:
+	case fanuc.Ain:
 		return comtool.AIN
-	case Aout:
+	case fanuc.Aout:
 		return comtool.AOUT
-	case Sreg:
+	case fanuc.Sreg:
 		return comtool.SREG
-	case Flag:
+	case fanuc.Flag:
 		return comtool.FLAG
 	}
 
 	return comtool.FunctionCode(0) // invalid
 }
 
-func maxLengthFor(dataType DataType) int {
-	switch dataType {
-	case Numreg, Posreg, Sreg:
+func maxLengthFor(t fanuc.Type) int {
+	switch t {
+	case fanuc.Numreg, fanuc.Posreg, fanuc.Sreg:
 		return 16
-	case Ualm:
+	case fanuc.Ualm:
 		return 29
 	default:
 		return 24
@@ -118,10 +119,10 @@ func (c *MultiUpdater) error(host string, msg string) {
 
 func (c *MultiUpdater) Update(defs []Definition) error {
 	for _, d := range defs {
-		if maxLength := maxLengthFor(d.DataType); len(d.Comment) > maxLength {
+		if maxLength := maxLengthFor(d.Type); len(d.Comment) > maxLength {
 			l := len(d.Comment)
 			d.Comment = d.Comment[:maxLength]
-			c.warn(fmt.Sprintf("comment for %s[%d] truncated to %q (%d > %d).", d.DataType, d.Id, d.Comment, l, maxLength))
+			c.warn(fmt.Sprintf("comment for %s[%d] truncated to %q (%d > %d).", d.Type, d.Id, d.Comment, l, maxLength))
 		}
 	}
 
@@ -137,7 +138,7 @@ func (c *MultiUpdater) Update(defs []Definition) error {
 
 				err := c.Updater.Update(d, host)
 				if err != nil {
-					c.error(host, fmt.Sprintf("Failed to update %s[%d].", d.DataType, d.Id))
+					c.error(host, fmt.Sprintf("Failed to update %s[%d].", d.Type, d.Id))
 				}
 			}
 		}(c, host, defs, &wg)

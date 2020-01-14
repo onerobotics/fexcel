@@ -35,6 +35,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&globalCfg.Numregs, "numregs", "", "", "start cell of numeric register ids")
 	rootCmd.PersistentFlags().StringVarP(&globalCfg.Posregs, "posregs", "", "", "start cell of position register ids")
 	rootCmd.PersistentFlags().StringVarP(&globalCfg.Ualms, "ualms", "", "", "start cell of user alarm ids")
+	rootCmd.PersistentFlags().StringVarP(&globalCfg.Gins, "gins", "", "", "start cell of group input ids")
+	rootCmd.PersistentFlags().StringVarP(&globalCfg.Gouts, "gouts", "", "", "start cell of group output ids")
 	rootCmd.PersistentFlags().StringVarP(&globalCfg.Rins, "rins", "", "", "start cell of robot input ids")
 	rootCmd.PersistentFlags().StringVarP(&globalCfg.Routs, "routs", "", "", "start cell of robot output ids")
 	rootCmd.PersistentFlags().StringVarP(&globalCfg.Dins, "dins", "", "", "start cell of digital input ids")

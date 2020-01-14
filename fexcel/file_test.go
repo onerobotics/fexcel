@@ -1,10 +1,10 @@
-package excel
+package fexcel
 
 import (
 	"path/filepath"
 	"testing"
 
-	"github.com/onerobotics/fexcel/fanuc"
+	fanuc "github.com/onerobotics/go-fanuc"
 )
 
 const testDir = "testdata"
@@ -70,12 +70,12 @@ func TestDefinitions(t *testing.T) {
 	f.SetLocation(fanuc.Ualm, "A2", "Alarms")
 
 	expected := []struct {
-		fanuc.DataType
-		defs []fanuc.Definition
+		fanuc.Type
+		defs []Definition
 	}{
 		{
 			fanuc.Numreg,
-			[]fanuc.Definition{
+			[]Definition{
 				{fanuc.Numreg, 1, "this is an extremely long comment"},
 				{fanuc.Numreg, 2, "two"},
 				{fanuc.Numreg, 3, "three"},
@@ -85,7 +85,7 @@ func TestDefinitions(t *testing.T) {
 		},
 		{
 			fanuc.Posreg,
-			[]fanuc.Definition{
+			[]Definition{
 				{fanuc.Posreg, 1, "pr1"},
 				{fanuc.Posreg, 2, "pr2"},
 				{fanuc.Posreg, 3, "pr3"},
@@ -95,14 +95,14 @@ func TestDefinitions(t *testing.T) {
 		},
 		{
 			fanuc.Sreg,
-			[]fanuc.Definition{
+			[]Definition{
 				{fanuc.Sreg, 1, "sreg1"},
 				{fanuc.Sreg, 2, "sreg2"},
 			},
 		},
 		{
 			fanuc.Din,
-			[]fanuc.Definition{
+			[]Definition{
 				{fanuc.Din, 1, "din1"},
 				{fanuc.Din, 2, "din2"},
 				{fanuc.Din, 3, "din3"},
@@ -110,7 +110,7 @@ func TestDefinitions(t *testing.T) {
 		},
 		{
 			fanuc.Dout,
-			[]fanuc.Definition{
+			[]Definition{
 				{fanuc.Dout, 1, "dout1"},
 				{fanuc.Dout, 2, "dout2"},
 				{fanuc.Dout, 3, "dout3"},
@@ -119,44 +119,44 @@ func TestDefinitions(t *testing.T) {
 		},
 		{
 			fanuc.Rin,
-			[]fanuc.Definition{
+			[]Definition{
 				{fanuc.Rin, 1, "rin1"},
 				{fanuc.Rin, 2, "rin2"},
 			},
 		},
 		{
 			fanuc.Rout,
-			[]fanuc.Definition{
+			[]Definition{
 				{fanuc.Rout, 1, "rout1"},
 			},
 		},
 		{
 			fanuc.Gin,
-			[]fanuc.Definition{
+			[]Definition{
 				{fanuc.Gin, 1, "gin1"},
 			},
 		},
 		{
 			fanuc.Gout,
-			[]fanuc.Definition{
+			[]Definition{
 				{fanuc.Gout, 1, "gout1"},
 			},
 		},
 		{
 			fanuc.Ain,
-			[]fanuc.Definition{
+			[]Definition{
 				{fanuc.Ain, 1, "ain1"},
 			},
 		},
 		{
 			fanuc.Aout,
-			[]fanuc.Definition{
+			[]Definition{
 				{fanuc.Aout, 1, "aout1"},
 			},
 		},
 		{
 			fanuc.Ualm,
-			[]fanuc.Definition{
+			[]Definition{
 				{fanuc.Ualm, 1, "test"},
 				{fanuc.Ualm, 2, "test two"},
 				{fanuc.Ualm, 3, "test three"},
@@ -166,20 +166,20 @@ func TestDefinitions(t *testing.T) {
 	}
 
 	for _, e := range expected {
-		defs, err := f.Definitions(e.DataType)
+		defs, err := f.Definitions(e.Type)
 		if err != nil {
-			t.Errorf("Failed to get defs for %s: %q", e.DataType, err)
+			t.Errorf("Failed to get defs for %s: %q", e.Type, err)
 			continue
 		}
 
 		if len(defs) != len(e.defs) {
-			t.Errorf("Bad # of defs for %s. Got %d, want %d", e.DataType, len(defs), len(e.defs))
+			t.Errorf("Bad # of defs for %s. Got %d, want %d", e.Type, len(defs), len(e.defs))
 			continue
 		}
 
 		for id, def := range defs {
-			if def.DataType != e.DataType {
-				t.Errorf("Bad DataType. Got %q, want %q", def.DataType, e.DataType)
+			if def.Type != e.Type {
+				t.Errorf("Bad Type. Got %q, want %q", def.Type, e.Type)
 			}
 
 			if def.Id != e.defs[id].Id {

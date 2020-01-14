@@ -1,4 +1,4 @@
-package fanuc
+package fexcel
 
 import (
 	"net/http"
@@ -6,6 +6,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	fanuc "github.com/onerobotics/go-fanuc"
 )
 
 func TestCommentToolUpdater(t *testing.T) {
@@ -21,7 +23,7 @@ func TestCommentToolUpdater(t *testing.T) {
 	c := &CommentToolUpdater{100 * time.Millisecond}
 
 	host := server.URL[7:] // ignore http://
-	err := c.Update(Definition{Numreg, 1, "foo"}, host)
+	err := c.Update(Definition{fanuc.Numreg, 1, "foo"}, host)
 	if err != nil {
 		t.Error(err)
 	}
@@ -49,8 +51,8 @@ func TestMultiUpdater(t *testing.T) {
 	mu := NewMultiUpdater(hosts, c)
 
 	err := mu.Update([]Definition{
-		Definition{Numreg, 1, "foo"},
-		Definition{Numreg, 1, "foo"},
+		Definition{fanuc.Numreg, 1, "foo"},
+		Definition{fanuc.Numreg, 1, "foo"},
 	})
 	if err != nil {
 		t.Error(err)

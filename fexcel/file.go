@@ -1,11 +1,11 @@
-package excel
+package fexcel
 
 import (
 	"fmt"
 	"strconv"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-	"github.com/onerobotics/fexcel/fanuc"
+	"github.com/360EntSecGroup-Skylar/excelize/v2"
+	fanuc "github.com/onerobotics/go-fanuc"
 )
 
 type Location struct {
@@ -17,7 +17,7 @@ type File struct {
 	offset int
 	xlsx   *excelize.File
 
-	Locations map[fanuc.DataType]Location
+	Locations map[fanuc.Type]Location
 }
 
 func NewFile(path string, offset int) (*File, error) {
@@ -31,12 +31,12 @@ func NewFile(path string, offset int) (*File, error) {
 	}
 
 	f := File{offset: offset, xlsx: xlsx}
-	f.Locations = make(map[fanuc.DataType]Location)
+	f.Locations = make(map[fanuc.Type]Location)
 
 	return &f, nil
 }
 
-func (f *File) SetLocation(dataType fanuc.DataType, axis, sheet string) {
+func (f *File) SetLocation(dataType fanuc.Type, axis, sheet string) {
 	f.Locations[dataType] = Location{axis, sheet}
 }
 
@@ -73,8 +73,8 @@ func (f *File) readString(sheet string, col, row int) (string, error) {
 	return value, nil
 }
 
-func (f *File) readDefinition(dataType fanuc.DataType, sheet string, col, row int) (d fanuc.Definition, err error) {
-	d.DataType = dataType
+func (f *File) readDefinition(dataType fanuc.Type, sheet string, col, row int) (d Definition, err error) {
+	d.Type = dataType
 
 	d.Id, err = f.readInt(sheet, col, row)
 	if err != nil {
@@ -85,7 +85,7 @@ func (f *File) readDefinition(dataType fanuc.DataType, sheet string, col, row in
 	return
 }
 
-func (f *File) Definitions(dataType fanuc.DataType) ([]fanuc.Definition, error) {
+func (f *File) Definitions(dataType fanuc.Type) ([]Definition, error) {
 	loc, defined := f.Locations[dataType]
 	if !defined {
 		return nil, fmt.Errorf("Location for %s not defined", dataType)
@@ -96,7 +96,7 @@ func (f *File) Definitions(dataType fanuc.DataType) ([]fanuc.Definition, error) 
 		return nil, fmt.Errorf("Invalid location for %s: %q", dataType, loc.Axis)
 	}
 
-	var defs []fanuc.Definition
+	var defs []Definition
 	for ; ; row++ {
 		// check for blank id
 		s, err := f.readString(loc.Sheet, col, row)

@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/onerobotics/fexcel/excel"
-	"github.com/onerobotics/fexcel/fanuc"
+	fanuc "github.com/onerobotics/go-fanuc"
 )
 
 const Version = "2.0.0"
@@ -76,26 +75,26 @@ func parseLocationSpec(spec string, defaultSheet string) (sheet string, axis str
 	return
 }
 
-func setLocation(f *excel.File, dataType fanuc.DataType, spec string, defaultSheet string) error {
+func setLocation(f *File, t fanuc.Type, spec string, defaultSheet string) error {
 	sheet, axis, err := parseLocationSpec(spec, defaultSheet)
 	if err != nil {
 		return err
 	}
 
-	f.SetLocation(dataType, axis, sheet)
+	f.SetLocation(t, axis, sheet)
 
 	return nil
 }
 
-func PrepareFile(fpath string, cfg Config) (*excel.File, error) {
-	f, err := excel.NewFile(fpath, cfg.Offset)
+func PrepareFile(fpath string, cfg Config) (*File, error) {
+	f, err := NewFile(fpath, cfg.Offset)
 	if err != nil {
 		return nil, err
 	}
 
 	typeSpecs := []struct {
-		dataType fanuc.DataType
-		spec     string
+		t    fanuc.Type
+		spec string
 	}{
 		{fanuc.Numreg, cfg.Numregs},
 		{fanuc.Posreg, cfg.Posregs},
@@ -114,7 +113,7 @@ func PrepareFile(fpath string, cfg Config) (*excel.File, error) {
 
 	for _, ts := range typeSpecs {
 		if ts.spec != "" {
-			err = setLocation(f, ts.dataType, ts.spec, cfg.Sheet)
+			err = setLocation(f, ts.t, ts.spec, cfg.Sheet)
 			if err != nil {
 				return nil, err
 			}
