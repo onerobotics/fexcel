@@ -122,7 +122,11 @@ func NewDiffCommand(fpath string, fileConfig Config, timeout int, targetPaths ..
 		d.targets = append(d.targets, t)
 	}
 
-	f, err := PrepareFile(fpath, fileConfig)
+	f, err := NewFile(fpath, fileConfig)
+	if err != nil {
+		return nil, err
+	}
+	err = f.Open()
 	if err != nil {
 		return nil, err
 	}

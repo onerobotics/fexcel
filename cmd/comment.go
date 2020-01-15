@@ -52,7 +52,11 @@ func main(cmd *cobra.Command, args []string) error {
 
 	fpath, hosts := args[0], args[1:]
 
-	f, err := fexcel.PrepareFile(fpath, globalCfg)
+	f, err := fexcel.NewFile(fpath, globalCfg)
+	if err != nil {
+		return err
+	}
+	err = f.Open()
 	if err != nil {
 		return err
 	}
@@ -93,7 +97,7 @@ func main(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(c.Errors) > 0 {
-		return fmt.Errorf("Finished with %d errors", len(c.Errors))
+		return fmt.Errorf("Finished with errors on %d host", len(c.Errors))
 	}
 
 	return nil

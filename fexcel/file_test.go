@@ -9,65 +9,58 @@ import (
 
 const testDir = "testdata"
 
-func TestNewFile(t *testing.T) {
+func validFile(t *testing.T) *File {
 	fpath := filepath.Join(testDir, "test.xlsx")
+	cfg := Config{Offset: 1, Numregs: "Data:A2"}
 
-	f, err := NewFile(fpath, 5)
+	f, err := NewFile(fpath, cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if f.offset != 5 {
-		t.Errorf("Bad offset. Got %d, want %d", f.offset, 5)
-	}
-
-	if f.xlsx.Path != fpath {
-		t.Errorf("Bad path. Got %q, want %q", f.xlsx.Path, fpath)
-	}
+	return f
 }
 
-func TestSetLocation(t *testing.T) {
-	fpath := filepath.Join(testDir, "test.xlsx")
+func TestNewFile(t *testing.T) {
+	f := validFile(t)
 
-	f, err := NewFile(fpath, 5)
-	if err != nil {
-		t.Fatal(err)
+	if f.Locations[fanuc.Numreg].Sheet != "Data" {
+		t.Errorf("Bad sheet. Got %q, want %q", f.Locations[fanuc.Numreg].Sheet, "Data")
 	}
-
-	if _, defined := f.Locations[fanuc.Numreg]; defined {
-		t.Error("Expected locations to be undefined by default")
-	}
-
-	f.SetLocation(fanuc.Numreg, "A2", "Sheet1")
 	if f.Locations[fanuc.Numreg].Axis != "A2" {
 		t.Errorf("Bad axis. Got %q, want %q", f.Locations[fanuc.Numreg].Axis, "A2")
-	}
-	if f.Locations[fanuc.Numreg].Sheet != "Sheet1" {
-		t.Errorf("Bad sheet. Got %q, want %q", f.Locations[fanuc.Numreg].Sheet, "Sheet1")
 	}
 }
 
 func TestDefinitions(t *testing.T) {
 	fpath := filepath.Join(testDir, "test.xlsx")
 
-	f, err := NewFile(fpath, 1)
+	cfg := Config{
+		Sheet:   "Data",
+		Offset:  1,
+		Numregs: "A2",
+		Posregs: "D2",
+		Sregs:   "G2",
+		Flags:   "J2",
+		Dins:    "IO:A2",
+		Douts:   "IO:C2",
+		Rins:    "IO:E2",
+		Routs:   "IO:G2",
+		Gins:    "IO:I2",
+		Gouts:   "IO:K2",
+		Ains:    "IO:M2",
+		Aouts:   "IO:O2",
+		Ualms:   "Alarms:A2",
+	}
+
+	f, err := NewFile(fpath, cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	f.SetLocation(fanuc.Numreg, "A2", "Data")
-	f.SetLocation(fanuc.Posreg, "D2", "Data")
-	f.SetLocation(fanuc.Sreg, "G2", "Data")
-	f.SetLocation(fanuc.Flag, "J2", "Data")
-	f.SetLocation(fanuc.Din, "A2", "IO")
-	f.SetLocation(fanuc.Dout, "C2", "IO")
-	f.SetLocation(fanuc.Rin, "E2", "IO")
-	f.SetLocation(fanuc.Rout, "G2", "IO")
-	f.SetLocation(fanuc.Gin, "I2", "IO")
-	f.SetLocation(fanuc.Gout, "K2", "IO")
-	f.SetLocation(fanuc.Ain, "M2", "IO")
-	f.SetLocation(fanuc.Aout, "O2", "IO")
-	f.SetLocation(fanuc.Ualm, "A2", "Alarms")
+	err = f.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	expected := []struct {
 		fanuc.Type
@@ -191,5 +184,57 @@ func TestDefinitions(t *testing.T) {
 			}
 
 		}
+	}
+}
+
+func TestNewLocation(t *testing.T) {
+	tests := []struct {
+		spec         string
+		defaultSheet string
+		expAxis      string
+		expSheet     string
+	}{
+		{"A2", "Foo", "A2", "Foo"},
+		{"Bar:A2", "Foo", "A2", "Bar"},
+		{"D2", "Baz", "D2", "Baz"},
+	}
+
+	for _, test := range tests {
+		l, err := NewLocation(test.spec, test.defaultSheet)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if l.Axis != test.expAxis {
+			t.Errorf("Bad axis. Got %q, want %q", l.Axis, test.expAxis)
+		}
+		if l.Sheet != test.expSheet {
+			t.Errorf("Bad sheet. Got %q, want %q", l.Sheet, test.expSheet)
+		}
+	}
+}
+
+func TestOpen(t *testing.T) {
+	f := validFile(t)
+	if f.xlsx != nil {
+		t.Fatal("xlsx should not be nil")
+	}
+	err := f.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if f.xlsx == nil {
+		t.Fatal("xlsx is nil")
+	}
+}
+
+func TestNew(t *testing.T) {
+	var f File
+	if f.xlsx != nil {
+		t.Fatal("xlsx should not be nil")
+	}
+	f.New()
+	if f.xlsx == nil {
+		t.Fatal("xlsx is nil")
 	}
 }

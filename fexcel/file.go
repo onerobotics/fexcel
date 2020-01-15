@@ -3,6 +3,7 @@ package fexcel
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	fanuc "github.com/onerobotics/go-fanuc"
@@ -13,31 +14,71 @@ type Location struct {
 	Sheet string
 }
 
-type File struct {
-	offset int
-	xlsx   *excelize.File
+// returns a Location based on a cell specification
+// spec can be in the form of Sheet:Cell or just Cell
+// if the sheet is not provided in the spec, the default
+// sheet is used.
+func NewLocation(spec string, defaultSheet string) (*Location, error) {
+	parts := strings.Split(spec, ":")
 
-	Locations map[fanuc.Type]Location
+	switch len(parts) {
+	case 2:
+		return &Location{Sheet: parts[0], Axis: parts[1]}, nil
+	case 1:
+		// e.g. A2
+		return &Location{Sheet: defaultSheet, Axis: spec}, nil
+	}
+
+	return nil, fmt.Errorf("Cell specification %q is invalid. Should be in the form [Sheet:]Cell e.g. Sheet1:A2 or just A2.", spec)
 }
 
-func NewFile(path string, offset int) (*File, error) {
-	xlsx, err := excelize.OpenFile(path)
+type File struct {
+	path string
+	xlsx *excelize.File
+
+	Config
+	Locations map[fanuc.Type]*Location
+}
+
+func NewFile(path string, cfg Config) (*File, error) {
+	err := cfg.Validate()
 	if err != nil {
 		return nil, err
 	}
 
-	if offset == 0 {
-		return nil, fmt.Errorf("offset must be nonzero")
-	}
+	f := File{path: path, Config: cfg}
 
-	f := File{offset: offset, xlsx: xlsx}
-	f.Locations = make(map[fanuc.Type]Location)
+	// set locations based on config
+	f.Locations = make(map[fanuc.Type]*Location)
+	types := []fanuc.Type{fanuc.Numreg, fanuc.Posreg, fanuc.Ualm, fanuc.Ain, fanuc.Aout, fanuc.Din, fanuc.Dout, fanuc.Gin, fanuc.Gout, fanuc.Rin, fanuc.Rout, fanuc.Sreg, fanuc.Flag}
+	for _, t := range types {
+		spec := cfg.SpecFor(t)
+		if spec != "" {
+			loc, err := NewLocation(spec, cfg.Sheet)
+			if err != nil {
+				return nil, err
+			}
+
+			f.Locations[t] = loc
+		}
+	}
 
 	return &f, nil
 }
 
-func (f *File) SetLocation(dataType fanuc.Type, axis, sheet string) {
-	f.Locations[dataType] = Location{axis, sheet}
+func (f *File) Open() error {
+	xlsx, err := excelize.OpenFile(f.path)
+	if err != nil {
+		return err
+	}
+
+	f.xlsx = xlsx
+
+	return nil
+}
+
+func (f *File) New() {
+	f.xlsx = excelize.NewFile()
 }
 
 func (f *File) readInt(sheet string, col, row int) (int, error) {
@@ -81,7 +122,7 @@ func (f *File) readDefinition(dataType fanuc.Type, sheet string, col, row int) (
 		return
 	}
 
-	d.Comment, err = f.readString(sheet, col+f.offset, row)
+	d.Comment, err = f.readString(sheet, col+f.Config.Offset, row)
 	return
 }
 
