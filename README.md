@@ -61,8 +61,8 @@ Run `fexcel help` for more information on usage.
 |   | --sregs    | string | start cell* of string register ids | |
 |   | --ualms    | string | start cell* of user alarm ids | |
 
-* Note that start cell flags can be optionally prefixed with a sheet name that
-overrides the default `-sheet` flag. (e.g. `--numregs Data:A2`)
+\**start cell flags can be optionally prefixed with a sheet name that
+overrides the default `-sheet` flag. (e.g. `--numregs Data:A2`)*
 
 ## Details
 
