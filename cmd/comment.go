@@ -25,7 +25,7 @@ var commentCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(commentCmd)
-	commentCmd.Flags().IntVarP(&timeout, "timout", "", 500, "timeout value in milliseconds")
+	commentCmd.Flags().IntVarP(&timeout, "timeout", "", 500, "timeout value in milliseconds")
 }
 
 func validateArgs(cmd *cobra.Command, args []string) error {

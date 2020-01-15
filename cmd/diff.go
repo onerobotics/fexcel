@@ -20,7 +20,7 @@ var diffCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(diffCmd)
-	diffCmd.Flags().IntVarP(&timeout, "timout", "", 500, "timeout value in milliseconds")
+	diffCmd.Flags().IntVarP(&timeout, "timeout", "", 500, "timeout value in milliseconds")
 }
 
 func validateDiffArgs(cmd *cobra.Command, args []string) error {
