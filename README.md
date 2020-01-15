@@ -30,8 +30,8 @@ Run `fexcel help` for more information on usage.
 
 ## Commands
 
-| comment | Set FANUC robot comments from spreadsheet    |
-| diff    | Compare remote robot comments to spreadsheet |
+| comment | Set remote robot comments from spreadsheet    |
+| diff    | Compare robot comments to spreadsheet (remote or local) |
 | help    | Help about any command |
 | version | Print the version number of fexcel |
 
@@ -39,24 +39,27 @@ Run `fexcel help` for more information on usage.
 
 |   | Flag       | Type   | Description | Default |
 | - | ---------- | ----   | ----------- | ------- |
+|   | --ains     | string | start cell* of analog input ids | |
+|   | --aouts    | string | start cell* of analog output ids | |
+|   | --dins     | string | start cell* of digital input ids | |
+|   | --douts    | string | start cell* of digital output ids | |
+|   | --flags    | string | start cell* of flag ids | |
+|   | --gins     | string | start cell* of group input ids | |
+|   | --gouts    | string | start cell* of group output ids | |
 | -h| --help     |        | help for fexcel | |
 |   | --noupdate |        | don't check for fexcel updates | |
+|   | --numregs  | string | start cell* of numeric register ids | |
 |   | --offset   | int    | column offset between ids and comments | 1 |
-|   | --sheet    | string | default sheet to look at when unspecified in the start cell | "Sheet1" |
-|   | --ains     | string | start cell of analog input ids | |
-|   | --aouts    | string | start cell of analog output ids | |
-|   | --dins     | string | start cell of digital input ids | |
-|   | --douts    | string | start cell of digital output ids | |
-|   | --flags    | string | start cell of flag ids | |
-|   | --numregs  | string | start cell of numeric register ids | |
-|   | --posregs  | string | start cell of position register ids | |
-|   | --rins     | string | start cell of robot input ids | |
-|   | --routs    | string | start cell of robot output ids | |
-|   | --sregs    | string | start cell of string register ids | |
-|   | --ualms    | string | start cell of user alarm ids | |
+|   | --posregs  | string | start cell* of position register ids | |
+|   | --rins     | string | start cell* of robot input ids | |
+|   | --routs    | string | start cell* of robot output ids | |
+|   | --save     |        | save flagset to config file | |
+|   | --sheet    | string | default sheet to look at when unspecified in the start cell* | "Sheet1" |
+|   | --sregs    | string | start cell* of string register ids | |
+|   | --ualms    | string | start cell* of user alarm ids | |
 
-Note that start cell flags can be optionally prefixed with a sheet name that
-overrides the default `-sheet` flag. (e.g. `-numregs Data:A2`)
+* Note that start cell flags can be optionally prefixed with a sheet name that
+overrides the default `-sheet` flag. (e.g. `--numregs Data:A2`)
 
 ## Details
 
