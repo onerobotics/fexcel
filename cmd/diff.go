@@ -11,10 +11,11 @@ import (
 )
 
 var diffCmd = &cobra.Command{
-	Use:   "diff ./path/to/spreadsheet.xlsx target(s)...",
-	Short: "Diff comments between your spreadsheet and remote/local targets",
-	Args:  validateDiffArgs,
-	RunE:  diffMain,
+	Use:     "diff spreadsheet.xlsx target(s)...",
+	Short:   "Compare robot comments to spreadsheet (remote or local)",
+	Example: "  fexcel diff spreadsheet.xlsx 192.168.100.101 192.168.100.102 ./backup/dir ./some/other/backup/dir",
+	Args:    validateDiffArgs,
+	RunE:    diffMain,
 }
 
 func init() {
