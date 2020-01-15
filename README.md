@@ -31,6 +31,7 @@ Run `fexcel help` for more information on usage.
 ## Commands
 
 | comment | Set remote robot comments from spreadsheet    |
+| create  | Create a spreadsheet based on a target's comments |
 | diff    | Compare robot comments to spreadsheet (remote or local) |
 | help    | Help about any command |
 | version | Print the version number of fexcel |
