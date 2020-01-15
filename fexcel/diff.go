@@ -3,8 +3,6 @@ package fexcel
 import (
 	"fmt"
 	"io"
-	"net"
-	"os"
 	"path/filepath"
 	"strconv"
 
@@ -16,95 +14,7 @@ type DiffCommand struct {
 	fpath string
 
 	f       *File
-	targets []Target
-}
-
-type Target struct {
-	client fanuc.Client
-
-	Name     string
-	Comments map[fanuc.Type]map[int]string
-}
-
-func (t *Target) GetComments(typ fanuc.Type) error {
-	t.Comments[typ] = make(map[int]string)
-
-	switch typ {
-	case fanuc.Numreg:
-		numregs, err := t.client.NumericRegisters()
-		if err != nil {
-			return err
-		}
-		for _, r := range numregs {
-			t.Comments[typ][r.Id] = r.Comment
-		}
-	case fanuc.Posreg:
-		posregs, err := t.client.PositionRegisters()
-		if err != nil {
-			return err
-		}
-		for _, r := range posregs {
-			t.Comments[typ][r.Id] = r.Comment
-		}
-	case fanuc.Ain, fanuc.Aout, fanuc.Din, fanuc.Dout, fanuc.Flag, fanuc.Gin, fanuc.Gout, fanuc.Rin, fanuc.Rout:
-		ports, err := t.client.IO(typ)
-		if err != nil {
-			return err
-		}
-		for _, r := range ports {
-			t.Comments[typ][r.Id] = r.Comment
-		}
-	}
-
-	return nil
-}
-
-func isDir(path string) bool {
-	info, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-	if info.IsDir() {
-		return true
-	}
-
-	return false
-}
-
-func isIP(path string) bool {
-	ip := net.ParseIP(path)
-	if ip == nil {
-		return false
-	}
-
-	return true
-}
-
-func NewTarget(path string, timeout int) (t Target, err error) {
-	var client fanuc.Client
-
-	switch {
-	case isDir(path):
-		client, err = fanuc.NewFileClient(path)
-		if err != nil {
-			return
-		}
-		t.Name = path
-	case isIP(path):
-		client, err = fanuc.NewHTTPClient(path, timeout)
-		if err != nil {
-			return
-		}
-		t.Name = path // TODO: filepath.Base()?
-	default:
-		err = fmt.Errorf("%s is not a valid IP address or directory", path)
-		return
-	}
-	t.client = client
-
-	t.Comments = make(map[fanuc.Type]map[int]string)
-
-	return
+	targets []*Target
 }
 
 func NewDiffCommand(fpath string, fileConfig Config, timeout int, targetPaths ...string) (*DiffCommand, error) {
@@ -192,7 +102,6 @@ func (d *DiffCommand) Compare(t fanuc.Type) (comparisons []Comparison, err error
 				got = comment
 			}
 			c.Got[target.Name] = got
-
 		}
 
 		comparisons = append(comparisons, c)

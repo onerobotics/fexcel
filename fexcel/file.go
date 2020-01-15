@@ -81,6 +81,10 @@ func (f *File) New() {
 	f.xlsx = excelize.NewFile()
 }
 
+func (f *File) Save() error {
+	return f.xlsx.SaveAs(f.path)
+}
+
 func (f *File) readInt(sheet string, col, row int) (int, error) {
 	axis, err := excelize.CoordinatesToCellName(col, row)
 	if err != nil {
@@ -158,4 +162,18 @@ func (f *File) Definitions(dataType fanuc.Type) ([]Definition, error) {
 	}
 
 	return defs, nil
+}
+
+func (f *File) SetValue(sheet string, col int, row int, value interface{}) error {
+	axis, err := excelize.CoordinatesToCellName(col, row)
+	if err != nil {
+		return err
+	}
+
+	return f.xlsx.SetCellValue(sheet, axis, value)
+}
+
+// excelize does not create a new sheet if it already exists
+func (f *File) CreateSheet(name string) {
+	f.xlsx.NewSheet(name)
 }
