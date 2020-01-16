@@ -7,7 +7,7 @@ import (
 	fanuc "github.com/onerobotics/go-fanuc"
 )
 
-type Config struct {
+type FileConfig struct {
 	Numregs string // e.g. A2 or Sheet1:A2
 	Posregs string
 	Ualms   string
@@ -21,13 +21,17 @@ type Config struct {
 	Aouts   string
 	Sregs   string
 	Flags   string
-
-	Sheet    string
-	Offset   int
-	NoUpdate bool
+	Sheet   string
+	Offset  int
 }
 
-func (c *Config) Count() (i int) {
+type Config struct {
+	FileConfig
+	NoUpdate bool
+	Timeout  int
+}
+
+func (c *FileConfig) Count() (i int) {
 	items := []string{c.Numregs, c.Posregs, c.Ualms, c.Rins, c.Routs, c.Dins, c.Douts, c.Gins, c.Gouts, c.Ains, c.Aouts, c.Sregs, c.Flags}
 
 	for _, item := range items {
@@ -39,7 +43,7 @@ func (c *Config) Count() (i int) {
 	return i
 }
 
-func (c *Config) HasOverlaps() (bool, error) {
+func (c *FileConfig) HasOverlaps() (bool, error) {
 	specs := []string{c.Numregs, c.Posregs, c.Ualms, c.Rins, c.Routs, c.Dins, c.Douts, c.Gins, c.Gouts, c.Ains, c.Aouts, c.Sregs, c.Flags}
 
 	var locations []*Location
@@ -80,7 +84,7 @@ func (c *Config) HasOverlaps() (bool, error) {
 	return false, nil
 }
 
-func (c *Config) Validate() error {
+func (c *FileConfig) Validate() error {
 	if c.Count() < 1 {
 		return errors.New("no cell locations defined")
 	}
@@ -92,7 +96,7 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-func (c *Config) SpecFor(t fanuc.Type) string {
+func (c *FileConfig) SpecFor(t fanuc.Type) string {
 	switch t {
 	case fanuc.Numreg:
 		return c.Numregs

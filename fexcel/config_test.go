@@ -19,7 +19,7 @@ func TestHasOverlaps(t *testing.T) {
 	}
 
 	for id, test := range tests {
-		cfg := Config{
+		cfg := FileConfig{
 			Numregs: test.numregs,
 			Posregs: test.posregs,
 			Dins:    test.dins,

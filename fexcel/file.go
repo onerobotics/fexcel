@@ -36,11 +36,11 @@ type File struct {
 	path string
 	xlsx *excelize.File
 
-	Config
+	Config    FileConfig
 	Locations map[fanuc.Type]*Location
 }
 
-func NewFile(path string, cfg Config) (*File, error) {
+func NewFile(path string, cfg FileConfig) (*File, error) {
 	err := cfg.Validate()
 	if err != nil {
 		return nil, err

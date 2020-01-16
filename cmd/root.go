@@ -24,12 +24,7 @@ var rootCmd = &cobra.Command{
 	Use:   "fexcel",
 	Short: "Process a spreadsheet and report what fexcel sees",
 	Args:  validateRootArgs,
-	/*
-		PostRunE: func(cmd *cobra.Command, args []string) error {
-			return nil
-		},
-	*/
-	RunE: rootMain,
+	RunE:  rootMain,
 	PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
 		if save {
 			fmt.Printf("saving flagset to config file... ")
@@ -62,38 +57,47 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./"+configFile+")")
 	rootCmd.PersistentFlags().BoolVarP(&save, "save", "", false, "save flagset to config file")
+	rootCmd.PersistentFlags().BoolVar(&globalCfg.NoUpdate, "noupdate", false, "don't check for fexcel updates")
+
+	rootCmd.PersistentFlags().IntVarP(&globalCfg.Timeout, "timeout", "", 500, "timeout value in milliseconds")
+
+	rootCmd.PersistentFlags().StringVar(&globalCfg.Sheet, "sheet", "Sheet1", "default sheet to look at when unspecified in the start cell")
+	rootCmd.PersistentFlags().IntVar(&globalCfg.Offset, "offset", 1, "column offset between ids and comments")
+
 	rootCmd.PersistentFlags().StringVar(&globalCfg.Numregs, "numregs", "", "start cell of numeric register ids")
 	rootCmd.PersistentFlags().StringVar(&globalCfg.Posregs, "posregs", "", "start cell of position register ids")
+	rootCmd.PersistentFlags().StringVar(&globalCfg.Sregs, "sregs", "", "start cell of string register ids")
 	rootCmd.PersistentFlags().StringVar(&globalCfg.Ualms, "ualms", "", "start cell of user alarm ids")
+
+	rootCmd.PersistentFlags().StringVar(&globalCfg.Ains, "ains", "", "start cell of analog input ids")
+	rootCmd.PersistentFlags().StringVar(&globalCfg.Aouts, "aouts", "", "start cell of analog output ids")
+	rootCmd.PersistentFlags().StringVar(&globalCfg.Dins, "dins", "", "start cell of digital input ids")
+	rootCmd.PersistentFlags().StringVar(&globalCfg.Douts, "douts", "", "start cell of digital output ids")
+	rootCmd.PersistentFlags().StringVar(&globalCfg.Flags, "flags", "", "start cell of flag ids")
 	rootCmd.PersistentFlags().StringVar(&globalCfg.Gins, "gins", "", "start cell of group input ids")
 	rootCmd.PersistentFlags().StringVar(&globalCfg.Gouts, "gouts", "", "start cell of group output ids")
 	rootCmd.PersistentFlags().StringVar(&globalCfg.Rins, "rins", "", "start cell of robot input ids")
 	rootCmd.PersistentFlags().StringVar(&globalCfg.Routs, "routs", "", "start cell of robot output ids")
-	rootCmd.PersistentFlags().StringVar(&globalCfg.Dins, "dins", "", "start cell of digital input ids")
-	rootCmd.PersistentFlags().StringVar(&globalCfg.Douts, "douts", "", "start cell of digital output ids")
-	rootCmd.PersistentFlags().StringVar(&globalCfg.Ains, "ains", "", "start cell of analog input ids")
-	rootCmd.PersistentFlags().StringVar(&globalCfg.Aouts, "aouts", "", "start cell of analog output ids")
-	rootCmd.PersistentFlags().StringVar(&globalCfg.Sregs, "sregs", "", "start cell of string register ids")
-	rootCmd.PersistentFlags().StringVar(&globalCfg.Flags, "flags", "", "start cell of flag ids")
-	rootCmd.PersistentFlags().StringVar(&globalCfg.Sheet, "sheet", "Sheet1", "default sheet to look at when unspecified in the start cell")
-	rootCmd.PersistentFlags().IntVar(&globalCfg.Offset, "offset", 1, "column offset between ids and comments")
-	rootCmd.PersistentFlags().BoolVar(&globalCfg.NoUpdate, "noupdate", false, "don't check for fexcel updates")
+
+	viper.BindPFlag("timeout", rootCmd.PersistentFlags().Lookup("timeout"))
+
+	viper.BindPFlag("sheet", rootCmd.PersistentFlags().Lookup("sheet"))
+	viper.BindPFlag("offset", rootCmd.PersistentFlags().Lookup("offset"))
 
 	viper.BindPFlag("numregs", rootCmd.PersistentFlags().Lookup("numregs"))
 	viper.BindPFlag("posregs", rootCmd.PersistentFlags().Lookup("posregs"))
+	viper.BindPFlag("sregs", rootCmd.PersistentFlags().Lookup("sregs"))
 	viper.BindPFlag("ualms", rootCmd.PersistentFlags().Lookup("ualms"))
+
+	viper.BindPFlag("ains", rootCmd.PersistentFlags().Lookup("ains"))
+	viper.BindPFlag("aouts", rootCmd.PersistentFlags().Lookup("aouts"))
+	viper.BindPFlag("dins", rootCmd.PersistentFlags().Lookup("dins"))
+	viper.BindPFlag("douts", rootCmd.PersistentFlags().Lookup("douts"))
+	viper.BindPFlag("flags", rootCmd.PersistentFlags().Lookup("flags"))
 	viper.BindPFlag("gins", rootCmd.PersistentFlags().Lookup("gins"))
 	viper.BindPFlag("gouts", rootCmd.PersistentFlags().Lookup("gouts"))
 	viper.BindPFlag("rins", rootCmd.PersistentFlags().Lookup("rins"))
 	viper.BindPFlag("routs", rootCmd.PersistentFlags().Lookup("routs"))
-	viper.BindPFlag("dins", rootCmd.PersistentFlags().Lookup("dins"))
-	viper.BindPFlag("douts", rootCmd.PersistentFlags().Lookup("douts"))
-	viper.BindPFlag("ains", rootCmd.PersistentFlags().Lookup("ains"))
-	viper.BindPFlag("aouts", rootCmd.PersistentFlags().Lookup("aouts"))
-	viper.BindPFlag("sregs", rootCmd.PersistentFlags().Lookup("sregs"))
-	viper.BindPFlag("flags", rootCmd.PersistentFlags().Lookup("flags"))
-	viper.BindPFlag("sheet", rootCmd.PersistentFlags().Lookup("sheet"))
-	viper.BindPFlag("Offset", rootCmd.PersistentFlags().Lookup("offset"))
 }
 
 func initConfig() {
@@ -134,7 +138,7 @@ func rootMain(cmd *cobra.Command, args []string) error {
 
 	fpath := args[0]
 
-	f, err := fexcel.NewFile(fpath, globalCfg)
+	f, err := fexcel.NewFile(fpath, globalCfg.FileConfig)
 	if err != nil {
 		return err
 	}

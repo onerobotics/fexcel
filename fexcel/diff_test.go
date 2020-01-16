@@ -35,11 +35,13 @@ func TestNewDiffTarget(t *testing.T) {
 
 func TestDiffCompare(t *testing.T) {
 	cfg := Config{
-		Numregs: "Data:A2",
-		Offset:  1,
+		FileConfig: FileConfig{
+			Numregs: "Data:A2",
+			Offset:  1,
+		},
 	}
 
-	cmd, err := NewDiffCommand("testdata/test.xlsx", cfg, 0, "testdata")
+	cmd, err := NewDiffCommand("testdata/test.xlsx", cfg, "testdata")
 	if err != nil {
 		t.Fatal(err)
 	}

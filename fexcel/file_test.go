@@ -11,7 +11,7 @@ const testDir = "testdata"
 
 func validFile(t *testing.T) *File {
 	fpath := filepath.Join(testDir, "test.xlsx")
-	cfg := Config{Offset: 1, Numregs: "Data:A2"}
+	cfg := FileConfig{Offset: 1, Numregs: "Data:A2"}
 
 	f, err := NewFile(fpath, cfg)
 	if err != nil {
@@ -35,7 +35,7 @@ func TestNewFile(t *testing.T) {
 func TestDefinitions(t *testing.T) {
 	fpath := filepath.Join(testDir, "test.xlsx")
 
-	cfg := Config{
+	cfg := FileConfig{
 		Sheet:   "Data",
 		Offset:  1,
 		Numregs: "A2",

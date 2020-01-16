@@ -38,13 +38,13 @@ func NewCreator(path string, cfg Config, targetPath string) (*Creator, error) {
 		return nil, errors.New("configuration has overlapping columns")
 	}
 
-	f, err := NewFile(path, cfg)
+	f, err := NewFile(path, cfg.FileConfig)
 	if err != nil {
 		return nil, err
 	}
 	f.New()
 
-	t, err := NewTarget(targetPath, 500) // TODO: push timeout to config
+	t, err := NewTarget(targetPath, cfg.Timeout)
 	if err != nil {
 		return nil, err
 	}

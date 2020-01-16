@@ -17,7 +17,7 @@ type DiffCommand struct {
 	targets []*Target
 }
 
-func NewDiffCommand(fpath string, fileConfig Config, timeout int, targetPaths ...string) (*DiffCommand, error) {
+func NewDiffCommand(fpath string, cfg Config, targetPaths ...string) (*DiffCommand, error) {
 	if len(targetPaths) == 0 {
 		return nil, fmt.Errorf("Need at least one target")
 	}
@@ -25,14 +25,14 @@ func NewDiffCommand(fpath string, fileConfig Config, timeout int, targetPaths ..
 	d := DiffCommand{fpath: fpath}
 
 	for _, path := range targetPaths {
-		t, err := NewTarget(path, timeout)
+		t, err := NewTarget(path, cfg.Timeout)
 		if err != nil {
 			return nil, err
 		}
 		d.targets = append(d.targets, t)
 	}
 
-	f, err := NewFile(fpath, fileConfig)
+	f, err := NewFile(fpath, cfg.FileConfig)
 	if err != nil {
 		return nil, err
 	}

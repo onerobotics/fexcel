@@ -20,7 +20,6 @@ var diffCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(diffCmd)
-	diffCmd.Flags().IntVarP(&timeout, "timeout", "", 500, "timeout value in milliseconds")
 }
 
 func validateDiffArgs(cmd *cobra.Command, args []string) error {
@@ -43,7 +42,7 @@ func diffMain(cmd *cobra.Command, args []string) error {
 
 	fpath := args[0]
 
-	d, err := fexcel.NewDiffCommand(fpath, globalCfg, timeout, args[1:]...)
+	d, err := fexcel.NewDiffCommand(fpath, globalCfg, args[1:]...)
 	if err != nil {
 		return err
 	}

@@ -10,7 +10,9 @@ import (
 )
 
 func TestNewCreator(t *testing.T) {
-	cfg := Config{Offset: 1, Sheet: "Sheet1", Numregs: "A2"}
+	cfg := Config{
+		FileConfig: FileConfig{Offset: 1, Sheet: "Sheet1", Numregs: "A2"},
+	}
 
 	// must be an xlsx file
 	_, err := NewCreator("foo.bar", cfg, "127.0.0.1")
@@ -39,7 +41,7 @@ func TestNewCreator(t *testing.T) {
 	}
 
 	// overlaps
-	cfg = Config{Offset: 1, Sheet: "Sheet1", Numregs: "A2", Posregs: "B2"}
+	cfg.FileConfig = FileConfig{Offset: 1, Sheet: "Sheet1", Numregs: "A2", Posregs: "B2"}
 	_, err = NewCreator("./testdata/test2.xlsx", cfg, "testdata")
 	if err == nil {
 		t.Error("Expected an overlap error. Got none.")
@@ -58,7 +60,10 @@ func TestCreatorCreate(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	fpath := filepath.Join(dir, "test.xlsx")
-	cfg := Config{Offset: 1, Sheet: "Sheet1", Numregs: "A2"}
+	cfg := Config{
+		FileConfig: FileConfig{Offset: 1, Sheet: "Sheet1", Numregs: "A2"},
+		Timeout:    500,
+	}
 
 	c, err := NewCreator(fpath, cfg, "testdata")
 	if err != nil {
@@ -71,7 +76,7 @@ func TestCreatorCreate(t *testing.T) {
 	}
 
 	// verify with a DiffCommand
-	cmd, err := NewDiffCommand(fpath, cfg, 500, "testdata")
+	cmd, err := NewDiffCommand(fpath, cfg, "testdata")
 	if err != nil {
 		t.Fatal(err)
 	}

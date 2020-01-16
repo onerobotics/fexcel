@@ -52,7 +52,7 @@ func main(cmd *cobra.Command, args []string) error {
 
 	fpath, hosts := args[0], args[1:]
 
-	f, err := fexcel.NewFile(fpath, globalCfg)
+	f, err := fexcel.NewFile(fpath, globalCfg.FileConfig)
 	if err != nil {
 		return err
 	}
