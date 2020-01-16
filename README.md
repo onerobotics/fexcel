@@ -32,10 +32,10 @@ Run `fexcel help` for more information on usage.
 
 | Command | Description |
 | ------- | ----------- |
-| comment | Set remote robot comments from spreadsheet    |
 | create  | Create a spreadsheet based on a target's comments |
 | diff    | Compare robot comments to spreadsheet (remote or local) |
 | help    | Help about any command |
+| set     | Set remote robot comments from spreadsheet    |
 | version | Print the version number of fexcel |
 
 ## Global Flags
@@ -59,6 +59,7 @@ Run `fexcel help` for more information on usage.
 |   | --save     |        | save flagset to config file | |
 |   | --sheet    | string | default sheet to look at when unspecified in the start cell* | "Sheet1" |
 |   | --sregs    | string | start cell* of string register ids | |
+|   | --timeout  | int    | timeout value in milliseconds (default 500) |
 |   | --ualms    | string | start cell* of user alarm ids | |
 
 \**start cell flags can be optionally prefixed with a sheet name that

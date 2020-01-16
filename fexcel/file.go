@@ -32,6 +32,12 @@ func NewLocation(spec string, defaultSheet string) (*Location, error) {
 	return nil, fmt.Errorf("Cell specification %q is invalid. Should be in the form [Sheet:]Cell e.g. Sheet1:A2 or just A2.", spec)
 }
 
+type Definition struct {
+	Type    fanuc.Type
+	Id      int
+	Comment string
+}
+
 type File struct {
 	path string
 	xlsx *excelize.File

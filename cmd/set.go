@@ -11,18 +11,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var commentCmd = &cobra.Command{
-	Use:   "comment ./path/to/spreadsheet.xlsx ipAddress [more ipAddresses]",
+var setCmd = &cobra.Command{
+	Use:   "set ./path/to/spreadsheet.xlsx ipAddress [more ipAddresses]",
 	Short: "Set FANUC robots comments based on the provided Excel spreadsheet",
-	Args:  validateArgs,
-	RunE:  main,
+	Args:  validateSetArgs,
+	RunE:  setMain,
 }
 
 func init() {
-	rootCmd.AddCommand(commentCmd)
+	rootCmd.AddCommand(setCmd)
 }
 
-func validateArgs(cmd *cobra.Command, args []string) error {
+func validateSetArgs(cmd *cobra.Command, args []string) error {
 	if len(args) < 2 {
 		return errors.New("requires a spreadsheet and at least one host IP address")
 	}
@@ -41,7 +41,7 @@ func validateArgs(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func main(cmd *cobra.Command, args []string) error {
+func setMain(cmd *cobra.Command, args []string) error {
 	fmt.Printf(fexcel.Logo())
 
 	fpath, hosts := args[0], args[1:]
@@ -55,7 +55,7 @@ func main(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	c := fexcel.NewMultiUpdater(hosts, &fexcel.CommentToolUpdater{time.Duration(globalCfg.Timeout) * time.Millisecond})
+	c := fexcel.NewMultiSetter(hosts, &fexcel.CommentToolSetter{time.Duration(globalCfg.Timeout) * time.Millisecond})
 
 	var definitions []fexcel.Definition
 	for d, _ := range f.Locations {
@@ -73,7 +73,7 @@ func main(cmd *cobra.Command, args []string) error {
 
 	startTime := time.Now()
 
-	err = c.Update(definitions)
+	err = c.Set(definitions)
 	if err != nil {
 		return err
 	}

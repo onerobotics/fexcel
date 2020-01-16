@@ -9,38 +9,32 @@ import (
 	fanuc "github.com/onerobotics/go-fanuc"
 )
 
-type Definition struct {
-	Type    fanuc.Type
-	Id      int
-	Comment string
+type Setter interface {
+	Set(Definition, string) error
 }
 
-type Updater interface {
-	Update(Definition, string) error
-}
-
-type CommentToolUpdater struct {
+type CommentToolSetter struct {
 	Timeout time.Duration
 }
 
-func (c *CommentToolUpdater) Update(d Definition, host string) error {
+func (c *CommentToolSetter) Set(d Definition, host string) error {
 	fcode := codeForType(d.Type)
 	return comtool.Set(fcode, d.Id, d.Comment, host, c.Timeout)
 }
 
-type MultiUpdater struct {
+type MultiSetter struct {
 	Hosts    map[string]bool
 	Warnings []string
 	Errors   map[string][]string // key is host
-	Updater
+	Setter
 
 	wMux sync.Mutex
 	eMux sync.Mutex
 }
 
-func NewMultiUpdater(hosts []string, u Updater) *MultiUpdater {
-	m := &MultiUpdater{
-		Updater: u,
+func NewMultiSetter(hosts []string, u Setter) *MultiSetter {
+	m := &MultiSetter{
+		Setter: u,
 	}
 
 	m.Hosts = make(map[string]bool)
@@ -98,7 +92,7 @@ func maxLengthFor(t fanuc.Type) int {
 	}
 }
 
-func (c *MultiUpdater) warn(msg string) {
+func (c *MultiSetter) warn(msg string) {
 	c.wMux.Lock()
 	c.Warnings = append(c.Warnings, msg)
 	c.wMux.Unlock()
@@ -106,7 +100,7 @@ func (c *MultiUpdater) warn(msg string) {
 
 const maxErrors = 5
 
-func (c *MultiUpdater) error(host string, msg string) {
+func (c *MultiSetter) error(host string, msg string) {
 	c.eMux.Lock()
 	c.Errors[host] = append(c.Errors[host], msg)
 	if len(c.Errors[host]) >= maxErrors {
@@ -117,7 +111,7 @@ func (c *MultiUpdater) error(host string, msg string) {
 	c.eMux.Unlock()
 }
 
-func (c *MultiUpdater) Update(defs []Definition) error {
+func (c *MultiSetter) Set(defs []Definition) error {
 	for _, d := range defs {
 		if maxLength := maxLengthFor(d.Type); len(d.Comment) > maxLength {
 			l := len(d.Comment)
@@ -129,14 +123,14 @@ func (c *MultiUpdater) Update(defs []Definition) error {
 	var wg sync.WaitGroup
 	for host, _ := range c.Hosts {
 		wg.Add(1)
-		go func(c *MultiUpdater, host string, defs []Definition, wg *sync.WaitGroup) {
+		go func(c *MultiSetter, host string, defs []Definition, wg *sync.WaitGroup) {
 			defer wg.Done()
 			for _, d := range defs {
 				if !c.Hosts[host] {
 					return
 				}
 
-				err := c.Updater.Update(d, host)
+				err := c.Setter.Set(d, host)
 				if err != nil {
 					c.error(host, fmt.Sprintf("Failed to update %s[%d].", d.Type, d.Id))
 				}

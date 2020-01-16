@@ -10,7 +10,7 @@ import (
 	fanuc "github.com/onerobotics/go-fanuc"
 )
 
-func TestCommentToolUpdater(t *testing.T) {
+func TestCommentToolSetter(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.Write([]byte("OK"))
 		want := "/karel/ComSet?sComment=foo&sIndx=1&sFc=1"
@@ -20,16 +20,16 @@ func TestCommentToolUpdater(t *testing.T) {
 	}))
 	defer server.Close()
 
-	c := &CommentToolUpdater{100 * time.Millisecond}
+	c := &CommentToolSetter{100 * time.Millisecond}
 
 	host := server.URL[7:] // ignore http://
-	err := c.Update(Definition{fanuc.Numreg, 1, "foo"}, host)
+	err := c.Set(Definition{fanuc.Numreg, 1, "foo"}, host)
 	if err != nil {
 		t.Error(err)
 	}
 }
 
-func TestMultiUpdater(t *testing.T) {
+func TestMultiSetter(t *testing.T) {
 	var hfCallCount uint32
 	hf := http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.Write([]byte("OK"))
@@ -45,12 +45,12 @@ func TestMultiUpdater(t *testing.T) {
 	s2 := httptest.NewServer(hf)
 	defer s2.Close()
 
-	c := &CommentToolUpdater{100 * time.Millisecond}
+	c := &CommentToolSetter{100 * time.Millisecond}
 
 	hosts := []string{s1.URL[7:], s2.URL[7:]} // get rid of http://
-	mu := NewMultiUpdater(hosts, c)
+	mu := NewMultiSetter(hosts, c)
 
-	err := mu.Update([]Definition{
+	err := mu.Set([]Definition{
 		Definition{fanuc.Numreg, 1, "foo"},
 		Definition{fanuc.Numreg, 1, "foo"},
 	})
