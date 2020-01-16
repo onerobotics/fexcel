@@ -42,7 +42,8 @@ var rootCmd = &cobra.Command{
 		}
 
 		if !globalCfg.NoUpdate {
-			err := fexcel.CheckForUpdates(os.Stdout)
+			var c fexcel.GitHubUpdateChecker
+			err := c.UpdateCheck(os.Stdout)
 			if err != nil {
 				return errors.New("failed to get latest version id from GitHub.")
 			}
