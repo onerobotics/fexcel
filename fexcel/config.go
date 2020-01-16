@@ -3,6 +3,7 @@ package fexcel
 import (
 	"errors"
 
+	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	fanuc "github.com/onerobotics/go-fanuc"
 )
 
@@ -36,6 +37,47 @@ func (c *Config) Count() (i int) {
 	}
 
 	return i
+}
+
+func (c *Config) HasOverlaps() (bool, error) {
+	specs := []string{c.Numregs, c.Posregs, c.Ualms, c.Rins, c.Routs, c.Dins, c.Douts, c.Gins, c.Gouts, c.Ains, c.Aouts, c.Sregs, c.Flags}
+
+	var locations []*Location
+	for _, spec := range specs {
+		if spec != "" {
+			l, err := NewLocation(spec, c.Sheet)
+			if err != nil {
+				return false, err
+			}
+
+			locations = append(locations, l)
+		}
+	}
+
+	sheets := make(map[string]map[int]bool)
+	for _, loc := range locations {
+		if _, defined := sheets[loc.Sheet]; !defined {
+			sheets[loc.Sheet] = make(map[int]bool)
+		}
+
+		col, _, err := excelize.CellNameToCoordinates(loc.Axis)
+		if err != nil {
+			return false, err
+		}
+
+		// we consider the start Axis all the way through the offset to be an overlap
+		// e.g. numregs starting in column A with an offset of 5 will
+		// prevent other items from using columns A, B, C, D and E
+		for i := col; i <= col+c.Offset; i++ {
+			if sheets[loc.Sheet][i] {
+				return true, nil
+			} else {
+				sheets[loc.Sheet][i] = true
+			}
+		}
+	}
+
+	return false, nil
 }
 
 func (c *Config) Validate() error {

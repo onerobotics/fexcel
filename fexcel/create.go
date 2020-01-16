@@ -30,6 +30,14 @@ func NewCreator(path string, cfg Config, targetPath string) (*Creator, error) {
 		}
 	}
 
+	hasOverlaps, err := cfg.HasOverlaps()
+	if err != nil {
+		return nil, err
+	}
+	if hasOverlaps {
+		return nil, errors.New("configuration has overlapping columns")
+	}
+
 	f, err := NewFile(path, cfg)
 	if err != nil {
 		return nil, err

@@ -32,9 +32,21 @@ func TestNewCreator(t *testing.T) {
 		t.Errorf("Bad error msg. Got %q, want %q", err.Error(), want)
 	}
 
+	// this one should be good
 	_, err = NewCreator("./testdata/test2.xlsx", cfg, "testdata")
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	// overlaps
+	cfg = Config{Offset: 1, Sheet: "Sheet1", Numregs: "A2", Posregs: "B2"}
+	_, err = NewCreator("./testdata/test2.xlsx", cfg, "testdata")
+	if err == nil {
+		t.Error("Expected an overlap error. Got none.")
+	} else {
+		if err.Error() != "configuration has overlapping columns" {
+			t.Errorf("Bad overlap error msg. Got %q, want %q", err.Error(), "configuration has overlapping columns")
+		}
 	}
 }
 
