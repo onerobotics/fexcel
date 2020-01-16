@@ -1,6 +1,7 @@
 package fexcel
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -117,7 +118,13 @@ func (c *MultiSetter) Set(defs map[string][]Definition) error {
 
 				err := c.Setter.Set(d, host)
 				if err != nil {
-					c.error(host, fmt.Sprintf("Failed to update %s[%d].", d.Type, d.Id))
+					switch {
+					case errors.Is(err, comtool.ErrForbidden), errors.Is(err, comtool.ErrUnauthorized):
+						c.error(host, err.Error())
+						c.Hosts[host] = false // disable host
+					default:
+						c.error(host, fmt.Sprintf("Failed to update %s[%d].", d.Type, d.Id))
+					}
 				}
 			}
 		}(c, host, defs[host], &wg)

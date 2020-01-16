@@ -100,14 +100,17 @@ func setMain(cmd *cobra.Command, args []string) error {
 	}
 	fmt.Printf("\nFinished in %s.\n\n", time.Since(startTime))
 
-	for host, errs := range c.Errors {
-		for _, err := range errs {
-			fmt.Printf("[error] %s: %s\n", host, err)
-		}
-	}
-
 	if len(c.Errors) > 0 {
-		return fmt.Errorf("Finished with errors on %d host", len(c.Errors))
+		errorCount := 0
+		for host, errs := range c.Errors {
+			for _, err := range errs {
+				fmt.Printf("[error] %s: %s\n", host, err)
+				errorCount++
+			}
+		}
+		fmt.Println("")
+
+		return fmt.Errorf("Finished with %d %s on %d %s", errorCount, fexcel.Pluralize("error", errorCount), len(c.Errors), fexcel.Pluralize("host", len(c.Errors)))
 	}
 
 	return nil
