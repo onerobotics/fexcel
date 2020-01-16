@@ -11,21 +11,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	timeout int
-)
-
 var commentCmd = &cobra.Command{
 	Use:   "comment ./path/to/spreadsheet.xlsx ipAddress [more ipAddresses]",
-	Short: "Set FANUC robot comments",
-	Long:  "Set FANUC robots comments based on the provided Excel spreadsheet",
+	Short: "Set FANUC robots comments based on the provided Excel spreadsheet",
 	Args:  validateArgs,
 	RunE:  main,
 }
 
 func init() {
 	rootCmd.AddCommand(commentCmd)
-	commentCmd.Flags().IntVarP(&timeout, "timeout", "", 500, "timeout value in milliseconds")
 }
 
 func validateArgs(cmd *cobra.Command, args []string) error {
@@ -61,7 +55,7 @@ func main(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	c := fexcel.NewMultiUpdater(hosts, &fexcel.CommentToolUpdater{time.Duration(timeout) * time.Millisecond})
+	c := fexcel.NewMultiUpdater(hosts, &fexcel.CommentToolUpdater{time.Duration(globalCfg.Timeout) * time.Millisecond})
 
 	var definitions []fexcel.Definition
 	for d, _ := range f.Locations {
