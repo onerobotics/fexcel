@@ -22,6 +22,10 @@ func NewDiffCommand(fpath string, cfg Config, targetPaths ...string) (*DiffComma
 		return nil, fmt.Errorf("Need at least one target")
 	}
 
+	if cfg.FileConfig.Count() == 0 {
+		return nil, fmt.Errorf("no cell locations defined")
+	}
+
 	d := DiffCommand{fpath: fpath}
 
 	for _, path := range targetPaths {
@@ -136,12 +140,15 @@ func (d *DiffCommand) FprintTable(w io.Writer, t fanuc.Type) error {
 	return nil
 }
 
-func (d *DiffCommand) Execute(w io.Writer) error {
-	if len(d.f.Locations) == 0 {
-		fmt.Fprintln(w, "No cell location defined")
-		return nil
-	}
+func (d *DiffCommand) Locations() map[fanuc.Type]*Location {
+	return d.f.Locations
+}
 
+func (d *DiffCommand) Warnings() []string {
+	return d.f.Warnings
+}
+
+func (d *DiffCommand) Execute(w io.Writer) error {
 	for dataType, _ := range d.f.Locations {
 		err := d.FprintTable(w, dataType)
 		if err != nil {

@@ -31,11 +31,13 @@ type Config struct {
 	Timeout  int
 }
 
-func (c *FileConfig) Count() (i int) {
-	items := []string{c.Numregs, c.Posregs, c.Ualms, c.Rins, c.Routs, c.Dins, c.Douts, c.Gins, c.Gouts, c.Ains, c.Aouts, c.Sregs, c.Flags}
+func (c *FileConfig) Specs() []string {
+	return []string{c.Numregs, c.Posregs, c.Ualms, c.Rins, c.Routs, c.Dins, c.Douts, c.Gins, c.Gouts, c.Ains, c.Aouts, c.Sregs, c.Flags}
+}
 
-	for _, item := range items {
-		if item != "" {
+func (c *FileConfig) Count() (i int) {
+	for _, spec := range c.Specs() {
+		if spec != "" {
 			i++
 		}
 	}
@@ -44,10 +46,8 @@ func (c *FileConfig) Count() (i int) {
 }
 
 func (c *FileConfig) HasOverlaps() (bool, error) {
-	specs := []string{c.Numregs, c.Posregs, c.Ualms, c.Rins, c.Routs, c.Dins, c.Douts, c.Gins, c.Gouts, c.Ains, c.Aouts, c.Sregs, c.Flags}
-
 	var locations []*Location
-	for _, spec := range specs {
+	for _, spec := range c.Specs() {
 		if spec != "" {
 			l, err := NewLocation(spec, c.Sheet)
 			if err != nil {

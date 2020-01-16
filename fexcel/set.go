@@ -23,12 +23,10 @@ func (c *CommentToolSetter) Set(d Definition, host string) error {
 }
 
 type MultiSetter struct {
-	Hosts    map[string]bool
-	Warnings []string
-	Errors   map[string][]string // key is host
+	Hosts  map[string]bool
+	Errors map[string][]string // key is host
 	Setter
 
-	wMux sync.Mutex
 	eMux sync.Mutex
 }
 
@@ -81,7 +79,7 @@ func codeForType(d fanuc.Type) comtool.FunctionCode {
 	return comtool.FunctionCode(0) // invalid
 }
 
-func maxLengthFor(t fanuc.Type) int {
+func MaxLengthFor(t fanuc.Type) int {
 	switch t {
 	case fanuc.Numreg, fanuc.Posreg, fanuc.Sreg:
 		return 16
@@ -90,12 +88,6 @@ func maxLengthFor(t fanuc.Type) int {
 	default:
 		return 24
 	}
-}
-
-func (c *MultiSetter) warn(msg string) {
-	c.wMux.Lock()
-	c.Warnings = append(c.Warnings, msg)
-	c.wMux.Unlock()
 }
 
 const maxErrors = 5
@@ -111,20 +103,13 @@ func (c *MultiSetter) error(host string, msg string) {
 	c.eMux.Unlock()
 }
 
-func (c *MultiSetter) Set(defs []Definition) error {
-	for _, d := range defs {
-		if maxLength := maxLengthFor(d.Type); len(d.Comment) > maxLength {
-			l := len(d.Comment)
-			d.Comment = d.Comment[:maxLength]
-			c.warn(fmt.Sprintf("comment for %s[%d] truncated to %q (%d > %d).", d.Type, d.Id, d.Comment, l, maxLength))
-		}
-	}
-
+func (c *MultiSetter) Set(defs map[string][]Definition) error {
 	var wg sync.WaitGroup
 	for host, _ := range c.Hosts {
 		wg.Add(1)
 		go func(c *MultiSetter, host string, defs []Definition, wg *sync.WaitGroup) {
 			defer wg.Done()
+
 			for _, d := range defs {
 				if !c.Hosts[host] {
 					return
@@ -135,7 +120,7 @@ func (c *MultiSetter) Set(defs []Definition) error {
 					c.error(host, fmt.Sprintf("Failed to update %s[%d].", d.Type, d.Id))
 				}
 			}
-		}(c, host, defs, &wg)
+		}(c, host, defs[host], &wg)
 	}
 	wg.Wait()
 

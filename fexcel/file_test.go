@@ -185,6 +185,15 @@ func TestDefinitions(t *testing.T) {
 
 		}
 	}
+
+	if len(f.Warnings) != 1 {
+		t.Fatal("Expected 1 warning")
+	}
+
+	want := "comment in [Data]B2 for R[1] will be truncated to \"this is an extre\" (length 33 > max length 16 for Numeric Registers)"
+	if f.Warnings[0] != want {
+		t.Errorf("Bad warning. Got %q, want %q", f.Warnings[0], want)
+	}
 }
 
 func TestNewLocation(t *testing.T) {

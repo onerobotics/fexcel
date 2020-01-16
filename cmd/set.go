@@ -46,43 +46,59 @@ func setMain(cmd *cobra.Command, args []string) error {
 
 	fpath, hosts := args[0], args[1:]
 
-	f, err := fexcel.NewFile(fpath, globalCfg.FileConfig)
-	if err != nil {
-		return err
-	}
-	err = f.Open()
+	diffCmd, err := fexcel.NewDiffCommand(fpath, globalCfg, hosts...)
 	if err != nil {
 		return err
 	}
 
-	c := fexcel.NewMultiSetter(hosts, &fexcel.CommentToolSetter{time.Duration(globalCfg.Timeout) * time.Millisecond})
-
-	var definitions []fexcel.Definition
-	for d, _ := range f.Locations {
-		defs, err := f.Definitions(d)
+	definitions := make(map[string][]fexcel.Definition) // key is host
+	for dataType, _ := range diffCmd.Locations() {
+		comparisons, err := diffCmd.Compare(dataType)
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("Found %d %ss.\n", len(defs), d.VerboseName())
-
-		definitions = append(definitions, defs...)
+		fmt.Printf("Found %d %s\n", len(comparisons), fexcel.Pluralize(dataType.VerboseName(), len(comparisons)))
+		for _, c := range comparisons {
+			for host, got := range c.Got {
+				if got != c.Want {
+					// see if it's because want is too long
+					if maxLength := fexcel.MaxLengthFor(dataType); len(c.Want) > maxLength {
+						if got == c.Want[:maxLength] {
+							continue
+						}
+					}
+					definitions[host] = append(definitions[host], fexcel.Definition{Type: dataType, Id: c.Id, Comment: c.Want})
+				}
+			}
+		}
+		for _, host := range hosts {
+			fmt.Printf("  %d %s on %s\n", len(definitions[host]), fexcel.Pluralize("difference", len(definitions[host])), host)
+		}
 	}
 
-	fmt.Printf("\nUpdating %d comments on %d %s... ", len(definitions), len(hosts), fexcel.Pluralize("host", len(hosts)))
+	fmt.Println("")
+
+	if len(definitions) == 0 {
+		fmt.Println("Comments are up to date.")
+		return nil
+	}
+
+	for _, warning := range diffCmd.Warnings() {
+		fmt.Printf("[warning] %s\n", warning)
+	}
+
+	for host, defs := range definitions {
+		fmt.Printf("\nSetting %d %s on %s\n", len(defs), fexcel.Pluralize("comment", len(defs)), host)
+	}
 
 	startTime := time.Now()
-
+	c := fexcel.NewMultiSetter(hosts, &fexcel.CommentToolSetter{time.Duration(globalCfg.Timeout) * time.Millisecond})
 	err = c.Set(definitions)
 	if err != nil {
 		return err
 	}
-
-	fmt.Printf("finished in %s.\n\n", time.Since(startTime))
-
-	for _, warning := range c.Warnings {
-		fmt.Printf("[warning] %s\n", warning)
-	}
+	fmt.Printf("\nFinished in %s.\n\n", time.Since(startTime))
 
 	for host, errs := range c.Errors {
 		for _, err := range errs {

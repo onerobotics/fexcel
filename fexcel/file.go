@@ -44,6 +44,7 @@ type File struct {
 
 	Config    FileConfig
 	Locations map[fanuc.Type]*Location
+	Warnings  []string
 }
 
 func NewFile(path string, cfg FileConfig) (*File, error) {
@@ -133,6 +134,16 @@ func (f *File) readDefinition(dataType fanuc.Type, sheet string, col, row int) (
 	}
 
 	d.Comment, err = f.readString(sheet, col+f.Config.Offset, row)
+	if maxLength := MaxLengthFor(dataType); len(d.Comment) > maxLength {
+		var axis string
+		axis, err = excelize.CoordinatesToCellName(col+f.Config.Offset, row)
+		if err != nil {
+			return
+		}
+
+		f.Warnings = append(f.Warnings, fmt.Sprintf("comment in [%s]%s for %s[%d] will be truncated to %q (length %d > max length %d for %ss)", sheet, axis, d.Type, d.Id, d.Comment[:maxLength], len(d.Comment), maxLength, dataType.VerboseName()))
+	}
+
 	return
 }
 

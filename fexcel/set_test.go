@@ -48,17 +48,17 @@ func TestMultiSetter(t *testing.T) {
 	c := &CommentToolSetter{100 * time.Millisecond}
 
 	hosts := []string{s1.URL[7:], s2.URL[7:]} // get rid of http://
-	mu := NewMultiSetter(hosts, c)
+	ms := NewMultiSetter(hosts, c)
 
-	err := mu.Set([]Definition{
-		Definition{fanuc.Numreg, 1, "foo"},
-		Definition{fanuc.Numreg, 1, "foo"},
-	})
+	defs := make(map[string][]Definition)
+	defs[hosts[0]] = []Definition{Definition{fanuc.Numreg, 1, "foo"}}
+	defs[hosts[1]] = []Definition{Definition{fanuc.Numreg, 1, "foo"}}
+	err := ms.Set(defs)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if hfCallCount != 4 {
+	if hfCallCount != 2 {
 		t.Errorf("handlerFunc only called %d times. Want 2", hfCallCount)
 	}
 }
