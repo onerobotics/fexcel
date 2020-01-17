@@ -61,7 +61,7 @@ Run `fexcel help` for more information on usage.
 |   | --save     |        | save flagset to config file | |
 |   | --sheet    | string | default sheet to look at when unspecified in the start cell* | "Sheet1" |
 |   | --sregs    | string | start cell* of string register ids | |
-|   | --timeout  | int    | timeout value in milliseconds (default 500) |
+|   | --timeout  | int    | timeout value in seconds (default 5) |
 |   | --ualms    | string | start cell* of user alarm ids | |
 
 \**start cell flags can be optionally prefixed with a sheet name that

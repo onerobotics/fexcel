@@ -60,7 +60,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&save, "save", "", false, "save flagset to config file")
 	rootCmd.PersistentFlags().BoolVar(&globalCfg.NoUpdate, "noupdate", false, "don't check for fexcel updates")
 
-	rootCmd.PersistentFlags().IntVarP(&globalCfg.Timeout, "timeout", "", 500, "timeout value in milliseconds")
+	rootCmd.PersistentFlags().IntVarP(&globalCfg.Timeout, "timeout", "", 5, "timeout value in seconds")
 
 	rootCmd.PersistentFlags().StringVar(&globalCfg.FileConfig.Sheet, "sheet", "Sheet1", "default sheet to look at when unspecified in the start cell")
 	rootCmd.PersistentFlags().IntVar(&globalCfg.FileConfig.Offset, "offset", 1, "column offset between ids and comments")

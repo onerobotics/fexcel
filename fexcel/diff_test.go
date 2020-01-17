@@ -11,7 +11,7 @@ func TestNewDiffTarget(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected an error")
 	}
-	want := "foo is not a valid IP address or directory"
+	want := "\"foo\" is not a valid IP address or directory"
 	if err.Error() != want {
 		t.Errorf("Bad error msg. Got %q, want %q", err.Error(), want)
 	}

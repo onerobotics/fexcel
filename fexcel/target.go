@@ -1,9 +1,7 @@
 package fexcel
 
 import (
-	"fmt"
-	"net"
-	"os"
+	"time"
 
 	fanuc "github.com/onerobotics/go-fanuc"
 )
@@ -15,51 +13,13 @@ type Target struct {
 	Comments map[fanuc.Type]map[int]string
 }
 
-func isDir(path string) bool {
-	info, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-	if info.IsDir() {
-		return true
-	}
-
-	return false
-}
-
-func isIP(path string) bool {
-	ip := net.ParseIP(path)
-	if ip == nil {
-		return false
-	}
-
-	return true
-}
-
-// TODO: maybe this should be pushed to go-fanuc package
-func clientFor(path string, timeout int) (fanuc.Client, error) {
-	switch {
-	case isDir(path):
-		client, err := fanuc.NewFileClient(path)
-		if err != nil {
-			return nil, err
-		}
-		return client, nil
-	case isIP(path):
-		client, err := fanuc.NewHTTPClient(path, timeout)
-		if err != nil {
-			return nil, err
-		}
-		return client, nil
-	default:
-		return nil, fmt.Errorf("%s is not a valid IP address or directory", path)
-	}
-}
-
 func NewTarget(path string, timeout int) (*Target, error) {
-	client, err := clientFor(path, timeout)
+	client, err := fanuc.NewClient(path)
 	if err != nil {
 		return nil, err
+	}
+	if c, ok := client.(*fanuc.HTTPClient); ok {
+		c.SetTimeout(time.Duration(timeout) * time.Second)
 	}
 
 	var t Target

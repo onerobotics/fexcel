@@ -86,6 +86,8 @@ github.com/onerobotics/comtool v0.2.0 h1:RHf9gDHOog+gFZ/ezCZRdKUcBNJwDpcEJY16w7i
 github.com/onerobotics/comtool v0.2.0/go.mod h1:62PfvvPZbCP05SQRT4+8AVf/hlL4JQkVAPGvKMIA/00=
 github.com/onerobotics/go-fanuc v0.3.0 h1:9IsRtA7xQlTn+yzXLwAl6Q+5feggXT7WFpODKjutSDs=
 github.com/onerobotics/go-fanuc v0.3.0/go.mod h1:oPCFL6RBNpkiYu8/TjI30+rC2hvoCIksPdlbwo3mYiA=
+github.com/onerobotics/go-fanuc v0.4.0 h1:a5DweyfT5nQ/EffNPrgi9UF5+8+NAhirxaGpSjx3DoA=
+github.com/onerobotics/go-fanuc v0.4.0/go.mod h1:oPCFL6RBNpkiYu8/TjI30+rC2hvoCIksPdlbwo3mYiA=
 github.com/pelletier/go-toml v1.2.0 h1:T5zMGML61Wp+FlcbWjRDT7yAxhJNAiPPLOFECq181zc=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
