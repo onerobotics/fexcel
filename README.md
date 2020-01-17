@@ -12,6 +12,8 @@ Manage your FANUC robot data with an Excel spreadsheet.
 
 Download the latest release [here](https://github.com/onerobotics/fexcel/releases/latest).
 
+[![Build Status](https://travis-ci.org/onerobotics/fexcel.svg "Travis CI status")](https://travis-ci.org/onerobotics/fexcel)
+
 ## Usage
 
 Make sure KAREL is unlocked under `Setup > Host Comm > HTTP`.
