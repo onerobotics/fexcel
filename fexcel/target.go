@@ -1,6 +1,7 @@
 package fexcel
 
 import (
+	"errors"
 	"time"
 
 	fanuc "github.com/onerobotics/go-fanuc"
@@ -61,4 +62,12 @@ func (t *Target) GetComments(typ fanuc.Type) error {
 	}
 
 	return nil
+}
+
+func (t *Target) SetComment(typ fanuc.Type, id int, comment string) error {
+	if c, ok := t.client.(*fanuc.HTTPClient); ok {
+		return c.SetComment(typ, id, comment)
+	} else {
+		return errors.New("need a fanuc.HTTPClient")
+	}
 }

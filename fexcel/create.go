@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"path/filepath"
 	"sort"
 
@@ -21,15 +20,6 @@ func NewCreator(path string, cfg Config, targetPath string) (*Creator, error) {
 		return nil, errors.New("File path must end in .xlsx")
 	}
 
-	if _, err := os.Stat(path); err == nil {
-		return nil, errors.New("File already exists")
-	} else {
-		// ok if err is IsNotExist
-		if !os.IsNotExist(err) {
-			return nil, err
-		}
-	}
-
 	hasOverlaps, err := cfg.HasOverlaps()
 	if err != nil {
 		return nil, err
@@ -42,7 +32,6 @@ func NewCreator(path string, cfg Config, targetPath string) (*Creator, error) {
 	if err != nil {
 		return nil, err
 	}
-	f.New()
 
 	t, err := NewTarget(targetPath, cfg.Timeout)
 	if err != nil {

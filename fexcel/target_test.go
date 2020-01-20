@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewTarget(t *testing.T) {
-	target, err := NewTarget("127.0.0.1", 100)
+	target, err := NewTarget("127.0.0.1", 5)
 	if err != nil {
 		t.Fatal(err)
 	}

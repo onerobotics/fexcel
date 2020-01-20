@@ -29,7 +29,7 @@ func TestNewCreator(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected an error")
 	}
-	want = "File already exists"
+	want = "File \"./testdata/test.xlsx\" already exists"
 	if err.Error() != want {
 		t.Errorf("Bad error msg. Got %q, want %q", err.Error(), want)
 	}

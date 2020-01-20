@@ -2,6 +2,7 @@ package fexcel
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -26,6 +27,9 @@ func NewLocation(spec string, defaultSheet string) (*Location, error) {
 		return &Location{Sheet: parts[0], Axis: parts[1]}, nil
 	case 1:
 		// e.g. A2
+		if defaultSheet == "" {
+			return nil, fmt.Errorf("cell specification %q requires a default sheet, but none has been defined", spec)
+		}
 		return &Location{Sheet: defaultSheet, Axis: spec}, nil
 	}
 
@@ -47,7 +51,7 @@ type File struct {
 	Warnings  []string
 }
 
-func NewFile(path string, cfg FileConfig) (*File, error) {
+func newFile(path string, cfg FileConfig) (*File, error) {
 	err := cfg.Validate()
 	if err != nil {
 		return nil, err
@@ -73,19 +77,36 @@ func NewFile(path string, cfg FileConfig) (*File, error) {
 	return &f, nil
 }
 
-func (f *File) Open() error {
+func OpenFile(path string, cfg FileConfig) (*File, error) {
+	f, err := newFile(path, cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	xlsx, err := excelize.OpenFile(f.path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	f.xlsx = xlsx
 
-	return nil
+	return f, nil
 }
 
-func (f *File) New() {
-	f.xlsx = excelize.NewFile()
+func NewFile(path string, cfg FileConfig) (*File, error) {
+	f, err := newFile(path, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	// file must not exist
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		f.xlsx = excelize.NewFile()
+
+		return f, nil
+	}
+
+	return nil, fmt.Errorf("File %q already exists", path)
 }
 
 func (f *File) Save() error {
@@ -145,6 +166,21 @@ func (f *File) readDefinition(dataType fanuc.Type, sheet string, col, row int) (
 	}
 
 	return
+}
+
+func (f *File) AllDefinitions() (map[fanuc.Type][]Definition, error) {
+	defs := make(map[fanuc.Type][]Definition)
+
+	for t, _ := range f.Locations {
+		d, err := f.Definitions(t)
+		if err != nil {
+			return nil, err
+		}
+
+		defs[t] = d
+	}
+
+	return defs, nil
 }
 
 func (f *File) Definitions(dataType fanuc.Type) ([]Definition, error) {

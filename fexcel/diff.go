@@ -13,7 +13,7 @@ import (
 type DiffCommand struct {
 	fpath string
 
-	f       *File
+	file    *File
 	targets []*Target
 }
 
@@ -36,15 +36,11 @@ func NewDiffCommand(fpath string, cfg Config, targetPaths ...string) (*DiffComma
 		d.targets = append(d.targets, t)
 	}
 
-	f, err := NewFile(fpath, cfg.FileConfig)
+	f, err := OpenFile(fpath, cfg.FileConfig)
 	if err != nil {
 		return nil, err
 	}
-	err = f.Open()
-	if err != nil {
-		return nil, err
-	}
-	d.f = f
+	d.file = f
 
 	return &d, nil
 }
@@ -80,7 +76,7 @@ func (c Comparison) row() []string {
 }
 
 func (d *DiffCommand) Compare(t fanuc.Type) (comparisons []Comparison, err error) {
-	definitions, err := d.f.Definitions(t)
+	definitions, err := d.file.Definitions(t)
 	if err != nil {
 		return
 	}
@@ -141,15 +137,15 @@ func (d *DiffCommand) FprintTable(w io.Writer, t fanuc.Type) error {
 }
 
 func (d *DiffCommand) Locations() map[fanuc.Type]*Location {
-	return d.f.Locations
+	return d.file.Locations
 }
 
 func (d *DiffCommand) Warnings() []string {
-	return d.f.Warnings
+	return d.file.Warnings
 }
 
 func (d *DiffCommand) Execute(w io.Writer) error {
-	for dataType, _ := range d.f.Locations {
+	for dataType, _ := range d.file.Locations {
 		err := d.FprintTable(w, dataType)
 		if err != nil {
 			return err

@@ -139,11 +139,7 @@ func rootMain(cmd *cobra.Command, args []string) error {
 
 	fpath := args[0]
 
-	f, err := fexcel.NewFile(fpath, globalCfg.FileConfig)
-	if err != nil {
-		return err
-	}
-	err = f.Open()
+	f, err := fexcel.OpenFile(fpath, globalCfg.FileConfig)
 	if err != nil {
 		return err
 	}

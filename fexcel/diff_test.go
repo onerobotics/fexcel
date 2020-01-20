@@ -6,33 +6,6 @@ import (
 	fanuc "github.com/onerobotics/go-fanuc"
 )
 
-func TestNewDiffTarget(t *testing.T) {
-	_, err := NewTarget("foo", 0)
-	if err == nil {
-		t.Fatal("expected an error")
-	}
-	want := "\"foo\" is not a valid IP address or directory"
-	if err.Error() != want {
-		t.Errorf("Bad error msg. Got %q, want %q", err.Error(), want)
-	}
-
-	c, err := NewTarget("127.0.0.1", 100)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if client, ok := c.client.(*fanuc.HTTPClient); !ok {
-		t.Errorf("Bad client. Got %T, want *fanuc.HTTPClient", client)
-	}
-
-	c, err = NewTarget(".", 0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if client, ok := c.client.(*fanuc.FileClient); !ok {
-		t.Errorf("Bad client. Got %T, want *fanuc.FileClient", client)
-	}
-}
-
 func TestDiffCompare(t *testing.T) {
 	cfg := Config{
 		FileConfig: FileConfig{

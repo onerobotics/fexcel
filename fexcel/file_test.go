@@ -9,20 +9,14 @@ import (
 
 const testDir = "testdata"
 
-func validFile(t *testing.T) *File {
+func TestOpenFile(t *testing.T) {
 	fpath := filepath.Join(testDir, "test.xlsx")
 	cfg := FileConfig{Offset: 1, Numregs: "Data:A2"}
 
-	f, err := NewFile(fpath, cfg)
+	f, err := OpenFile(fpath, cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	return f
-}
-
-func TestNewFile(t *testing.T) {
-	f := validFile(t)
 
 	if f.Locations[fanuc.Numreg].Sheet != "Data" {
 		t.Errorf("Bad sheet. Got %q, want %q", f.Locations[fanuc.Numreg].Sheet, "Data")
@@ -53,11 +47,7 @@ func TestDefinitions(t *testing.T) {
 		Ualms:   "Alarms:A2",
 	}
 
-	f, err := NewFile(fpath, cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = f.Open()
+	f, err := OpenFile(fpath, cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -223,27 +213,22 @@ func TestNewLocation(t *testing.T) {
 	}
 }
 
-func TestOpen(t *testing.T) {
-	f := validFile(t)
-	if f.xlsx != nil {
-		t.Fatal("xlsx should not be nil")
-	}
-	err := f.Open()
+func TestNewFile(t *testing.T) {
+	fpath := filepath.Join(testDir, "newfile.xlsx")
+	cfg := FileConfig{Offset: 1, Numregs: "Data:A2"}
+
+	_, err := NewFile(fpath, cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if f.xlsx == nil {
-		t.Fatal("xlsx is nil")
-	}
 }
 
-func TestNew(t *testing.T) {
-	var f File
-	if f.xlsx != nil {
-		t.Fatal("xlsx should not be nil")
-	}
-	f.New()
-	if f.xlsx == nil {
-		t.Fatal("xlsx is nil")
+func TestNewFileAlreadyExists(t *testing.T) {
+	fpath := filepath.Join(testDir, "test.xlsx")
+	cfg := FileConfig{Offset: 1, Numregs: "Data:A2"}
+
+	_, err := NewFile(fpath, cfg)
+	if err == nil {
+		t.Fatal("expected an error")
 	}
 }
