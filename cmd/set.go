@@ -73,12 +73,9 @@ func setMain(cmd *cobra.Command, args []string) error {
 		total = 0
 		row := []string{host}
 		for t, _ := range setCmd.Definitions {
-			if count, ok := result.Counts[host][t]; ok {
-				row = append(row, strconv.Itoa(count))
-				total += count
-			} else {
-				row = append(row, "0")
-			}
+			count := result.Counts[host][t]
+			row = append(row, strconv.Itoa(count))
+			total += count
 		}
 
 		row = append(row, strconv.Itoa(total))
