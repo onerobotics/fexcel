@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/onerobotics/fexcel/fexcel"
 	"github.com/spf13/cobra"
+	"github.com/unreal/fexcel/fexcel"
 )
 
 var setCmd = &cobra.Command{
