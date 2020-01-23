@@ -4,13 +4,13 @@ import (
 	"text/scanner"
 )
 
+type Node interface {
+	Pos() scanner.Position
+}
+
 type File struct {
 	pos   scanner.Position
 	Nodes []Node
-}
-
-type Node interface {
-	Pos() scanner.Position
 }
 
 type PointerNode struct {

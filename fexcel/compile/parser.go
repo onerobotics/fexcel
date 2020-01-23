@@ -37,10 +37,13 @@ func (p *parser) next() {
 	p.lit = p.scanner.TokenText()
 }
 
-func (p *parser) parseVar(typ string) Node {
-	pos, lit := p.pos, p.lit
+func (p *parser) parseVar() Node {
+	pos, typ := p.pos, p.lit
+	p.next() // typ
+	p.next() // {
+	lit := p.lit
 	p.expect(scanner.Ident)
-	p.expectRbrace()
+	p.expectLit("}")
 
 	return &VarNode{pos: pos, Type: typ, Ident: lit}
 }
@@ -50,10 +53,10 @@ func (p *parser) parsePointer() Node {
 	p.next() // consume &
 	typ := p.lit
 	p.expect(scanner.Ident)
-	p.expectLbrace()
+	p.expectLit("{")
 	lit := p.lit
 	p.expect(scanner.Ident)
-	p.expectRbrace()
+	p.expectLit("}")
 
 	return &PointerNode{pos: pos, Type: typ, Ident: lit}
 }
@@ -69,27 +72,17 @@ func (p *parser) expect(tok rune) {
 		p.next()
 	} else {
 		got := scanner.TokenString(p.tok)
-		msg := fmt.Sprintf("expected" + string(tok) + "but got" + got)
+		msg := fmt.Sprintf("expcted %q but got %q", string(tok), got)
 		p.error(p.scanner.Position, msg)
 	}
 }
 
-func (p *parser) expectLbrace() {
-	if p.lit == "{" {
+func (p *parser) expectLit(lit string) {
+	if p.lit == lit {
 		p.next()
 	} else {
 		got := scanner.TokenString(p.tok)
-		msg := fmt.Sprintf("expected { but got " + got)
-		p.error(p.scanner.Position, msg)
-	}
-}
-
-func (p *parser) expectRbrace() {
-	if p.lit == "}" {
-		p.next()
-	} else {
-		got := scanner.TokenString(p.tok)
-		msg := fmt.Sprintf("expected } but got " + got)
+		msg := fmt.Sprintf("expected %q but got %q", lit, got)
 		p.error(p.scanner.Position, msg)
 	}
 }
@@ -100,11 +93,8 @@ func (p *parser) parseFile() *File {
 	for p.tok != scanner.EOF {
 		switch p.tok {
 		case scanner.Ident:
-			typ := p.lit
 			if p.scanner.Peek() == '{' {
-				p.next()
-				p.next()
-				f.Nodes = append(f.Nodes, p.parseVar(typ))
+				f.Nodes = append(f.Nodes, p.parseVar())
 			} else {
 				f.Nodes = append(f.Nodes, p.parseText())
 			}
@@ -115,8 +105,6 @@ func (p *parser) parseFile() *File {
 				f.Nodes = append(f.Nodes, p.parseText())
 			}
 		}
-		//fmt.Printf("%s: %s %s\n", p.pos, scanner.TokenString(p.tok), p.lit)
-		//p.next()
 	}
 	return &f
 }

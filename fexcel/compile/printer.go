@@ -18,7 +18,7 @@ func NewPrinter(fpath string, cfg fexcel.FileConfig) (*Printer, error) {
 	var p Printer
 	p.Definitions = make(map[string]map[string]int)
 
-	spreadsheet, err := fexcel.OpenFile("test.xlsx", cfg)
+	spreadsheet, err := fexcel.OpenFile(fpath, cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -42,6 +42,11 @@ func NewPrinter(fpath string, cfg fexcel.FileConfig) (*Printer, error) {
 
 func (p *Printer) error(pos scanner.Position, msg string) {
 	p.errors.Add(pos, msg)
+}
+
+func (p *Printer) Reset() {
+	p.errors.Reset()
+	p.b.Reset()
 }
 
 func (p *Printer) Print(nodes ...Node) error {
