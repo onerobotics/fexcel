@@ -18,7 +18,12 @@ var createCmd = &cobra.Command{
 	RunE:    createMain,
 }
 
+var (
+	template bool
+)
+
 func init() {
+	createCmd.Flags().BoolVar(&template, "template", false, "ignore config file and cell specs flags; use fexcel default template instead")
 	rootCmd.AddCommand(createCmd)
 }
 
@@ -37,10 +42,34 @@ func validateCreateArgs(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+func templateConfig() fexcel.FileConfig {
+	return fexcel.FileConfig{
+		Numregs: "Sheet1:A2",
+		Posregs: "Sheet1:D2",
+		Flags:   "Sheet1:G2",
+		Sregs:   "Sheet1:J2",
+		Dins:    "A2",
+		Douts:   "D2",
+		Gins:    "G2",
+		Gouts:   "J2",
+		Rins:    "M2",
+		Routs:   "P2",
+		Ains:    "S2",
+		Aouts:   "V2",
+		Ualms:   "Alarms:A2",
+		Sheet:   "IO",
+		Offset:  1,
+	}
+}
+
 func createMain(cmd *cobra.Command, args []string) error {
 	fmt.Printf(fexcel.Logo())
 
 	fpath, targetPath := args[0], args[1]
+
+	if template {
+		globalCfg.FileConfig = templateConfig()
+	}
 
 	c, err := fexcel.NewCreator(fpath, globalCfg, targetPath)
 	if err != nil {
