@@ -110,7 +110,7 @@ func (d *DiffCommand) Compare(t fanuc.Type) (comparisons []Comparison, err error
 	return
 }
 
-func (d *DiffCommand) FprintTable(w io.Writer, t fanuc.Type) error {
+func (d *DiffCommand) FprintTable(w io.Writer, t fanuc.Type, all bool) error {
 	comparisons, err := d.Compare(t)
 	if err != nil {
 		return err
@@ -128,7 +128,9 @@ func (d *DiffCommand) FprintTable(w io.Writer, t fanuc.Type) error {
 	table.SetHeader(header)
 
 	for _, c := range comparisons {
-		table.Append(c.row())
+		if all || !c.Equal() {
+			table.Append(c.row())
+		}
 	}
 
 	table.Render()
@@ -142,16 +144,4 @@ func (d *DiffCommand) Locations() map[fanuc.Type]*Location {
 
 func (d *DiffCommand) Warnings() []string {
 	return d.file.Warnings
-}
-
-func (d *DiffCommand) Execute(w io.Writer) error {
-	for dataType, _ := range d.file.Locations {
-		err := d.FprintTable(w, dataType)
-		if err != nil {
-			return err
-		}
-		fmt.Fprintln(w, "")
-	}
-
-	return nil
 }

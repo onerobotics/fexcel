@@ -18,7 +18,12 @@ var diffCmd = &cobra.Command{
 	RunE:    diffMain,
 }
 
+var (
+	all bool
+)
+
 func init() {
+	diffCmd.Flags().BoolVar(&all, "all", false, "show all comparisons in summary tables instead of just differences")
 	rootCmd.AddCommand(diffCmd)
 }
 
@@ -47,9 +52,12 @@ func diffMain(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	err = d.Execute(os.Stdout)
-	if err != nil {
-		return err
+	for dataType, _ := range d.Locations() {
+		err := d.FprintTable(os.Stdout, dataType, all)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintln(os.Stdout, "")
 	}
 
 	return nil
