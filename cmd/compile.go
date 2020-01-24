@@ -19,11 +19,13 @@ var compileCmd = &cobra.Command{
 }
 
 var (
-	o string
+	o      string
+	silent bool
 )
 
 func init() {
 	compileCmd.Flags().StringVarP(&o, "output", "o", "", "Output file (e.g. filename.ls)")
+	compileCmd.Flags().BoolVar(&silent, "silent", false, "Don't print any output")
 	rootCmd.AddCommand(compileCmd)
 }
 
@@ -36,7 +38,11 @@ func validateCompileArgs(cmd *cobra.Command, args []string) error {
 }
 
 func compileMain(cmd *cobra.Command, args []string) error {
-	fmt.Printf(fexcel.Logo())
+	cmd.SilenceUsage = true
+
+	if !silent {
+		fmt.Printf(fexcel.Logo())
+	}
 
 	xlspath, fpath := args[0], args[1]
 
@@ -67,7 +73,9 @@ func compileMain(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		fmt.Printf("Wrote output to %s\n", o)
+		if !silent {
+			fmt.Printf("Wrote output to %s\n", o)
+		}
 	} else {
 		fmt.Print(p.Output())
 	}
