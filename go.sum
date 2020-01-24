@@ -81,8 +81,8 @@ github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRW
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
 github.com/olekukonko/tablewriter v0.0.4 h1:vHD/YYe1Wolo78koG299f7V/VAS08c6IpCLn+Ejf/w8=
 github.com/olekukonko/tablewriter v0.0.4/go.mod h1:zq6QwlOf5SlnkVbMSr5EoBv3636FWnp+qbPhuoO21uA=
-github.com/onerobotics/go-fanuc v0.6.0 h1:utQ1bncApe9PqwssPApS+9njVUM0Z4+fusafGvUV1f4=
-github.com/onerobotics/go-fanuc v0.6.0/go.mod h1:oPCFL6RBNpkiYu8/TjI30+rC2hvoCIksPdlbwo3mYiA=
+github.com/onerobotics/go-fanuc v0.6.1 h1:w1+YaeW71JwvV+dQdflQ1s4iaz4nZCmUVeNpRpYoBn8=
+github.com/onerobotics/go-fanuc v0.6.1/go.mod h1:oPCFL6RBNpkiYu8/TjI30+rC2hvoCIksPdlbwo3mYiA=
 github.com/pelletier/go-toml v1.2.0 h1:T5zMGML61Wp+FlcbWjRDT7yAxhJNAiPPLOFECq181zc=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
