@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-const Version = "2.0.0-beta.4"
+const Version = "2.0.0-beta.5"
 
 func Logo() string {
 	return fmt.Sprintf(`  __                  _
