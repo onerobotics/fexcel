@@ -11,11 +11,11 @@ import (
 
 func TestNewCreator(t *testing.T) {
 	cfg := Config{
-		FileConfig: FileConfig{Offset: 1, Sheet: "Sheet1", Numregs: "A2"},
+		FileConfig: FileConfig{Offset: 1, Sheet: "Sheet1", Numregs: "A1"},
 	}
 
 	// must be an xlsx file
-	_, err := NewCreator("foo.bar", cfg, "127.0.0.1")
+	_, err := NewCreator("foo.bar", cfg, false, "127.0.0.1")
 	if err == nil {
 		t.Fatal("Expected an error")
 	}
@@ -25,7 +25,7 @@ func TestNewCreator(t *testing.T) {
 	}
 
 	// file can't already exist
-	_, err = NewCreator("./testdata/test.xlsx", cfg, "testdata")
+	_, err = NewCreator("./testdata/test.xlsx", cfg, false, "testdata")
 	if err == nil {
 		t.Fatal("expected an error")
 	}
@@ -34,15 +34,25 @@ func TestNewCreator(t *testing.T) {
 		t.Errorf("Bad error msg. Got %q, want %q", err.Error(), want)
 	}
 
+	// header option fail
+	_, err = NewCreator("./testdata/test.xlsx", cfg, true, "testdata")
+	if err == nil {
+		t.Fatal("expected an error")
+	}
+	want = "Cell spec for Numeric Registers (A1) must be in row 2 or lower for headers option"
+	if err.Error() != want {
+		t.Errorf("Bad error msg. Got %q, want %q", err.Error(), want)
+	}
+
 	// this one should be good
-	_, err = NewCreator("./testdata/test2.xlsx", cfg, "testdata")
+	_, err = NewCreator("./testdata/test2.xlsx", cfg, false, "testdata")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// overlaps
 	cfg.FileConfig = FileConfig{Offset: 1, Sheet: "Sheet1", Numregs: "A2", Posregs: "B2"}
-	_, err = NewCreator("./testdata/test2.xlsx", cfg, "testdata")
+	_, err = NewCreator("./testdata/test2.xlsx", cfg, false, "testdata")
 	if err == nil {
 		t.Error("Expected an overlap error. Got none.")
 	} else {
@@ -65,7 +75,7 @@ func TestCreatorCreate(t *testing.T) {
 		Timeout:    500,
 	}
 
-	c, err := NewCreator(fpath, cfg, "testdata")
+	c, err := NewCreator(fpath, cfg, true, "testdata")
 	if err != nil {
 		t.Fatal(err)
 	}

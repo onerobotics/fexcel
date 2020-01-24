@@ -19,10 +19,12 @@ var createCmd = &cobra.Command{
 }
 
 var (
+	headers  bool
 	template bool
 )
 
 func init() {
+	createCmd.Flags().BoolVar(&headers, "headers", false, "write column header names")
 	createCmd.Flags().BoolVar(&template, "template", false, "ignore config file and cell specs flags; use fexcel default template instead")
 	rootCmd.AddCommand(createCmd)
 }
@@ -71,7 +73,7 @@ func createMain(cmd *cobra.Command, args []string) error {
 		globalCfg.FileConfig = templateConfig()
 	}
 
-	c, err := fexcel.NewCreator(fpath, globalCfg, targetPath)
+	c, err := fexcel.NewCreator(fpath, globalCfg, headers, targetPath)
 	if err != nil {
 		return err
 	}

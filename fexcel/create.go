@@ -11,11 +11,12 @@ import (
 )
 
 type Creator struct {
-	file   *File
-	target *Target
+	file    *File
+	target  *Target
+	headers bool
 }
 
-func NewCreator(path string, cfg Config, targetPath string) (*Creator, error) {
+func NewCreator(path string, cfg Config, headers bool, targetPath string) (*Creator, error) {
 	if filepath.Ext(path) != ".xlsx" {
 		return nil, errors.New("File path must end in .xlsx")
 	}
@@ -28,6 +29,13 @@ func NewCreator(path string, cfg Config, targetPath string) (*Creator, error) {
 		return nil, errors.New("configuration has overlapping columns")
 	}
 
+	if headers {
+		err = cfg.CheckHeaders()
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	f, err := NewFile(path, cfg.FileConfig)
 	if err != nil {
 		return nil, err
@@ -38,7 +46,7 @@ func NewCreator(path string, cfg Config, targetPath string) (*Creator, error) {
 		return nil, err
 	}
 
-	return &Creator{file: f, target: t}, nil
+	return &Creator{file: f, target: t, headers: headers}, nil
 }
 
 func (c *Creator) Create(w io.Writer) error {
@@ -58,6 +66,14 @@ func (c *Creator) Create(w io.Writer) error {
 		col, row, err := excelize.CellNameToCoordinates(location.Axis)
 		if err != nil {
 			return err
+		}
+
+		// write header
+		if c.headers {
+			err = c.file.SetValue(location.Sheet, col, row-1, typ.VerboseName()+"s")
+			if err != nil {
+				return err
+			}
 		}
 
 		// maps are not ordered, so let's create an ids slice we can sort
