@@ -1,0 +1,15 @@
+/PROG  TEST
+/ATTR
+COMMENT		= "";
+DEFAULT_GROUP	= 1,*,*,*,*;
+/APPL
+AUTO_SINGULARITY_HEADER;
+  ENABLE_SINGULARITY_AVOIDANCE   : TRUE;
+/MN
+ : ! this is a valid file ;
+ : R[1:one]=R[2:two]+R[3:three] ;
+ : J PR[4:home] 100% CNT100 ;
+ : PR[5:lpos]=LPOS ;
+ : PR[6:jpos]=JPOS ;
+/POS
+/END

@@ -1,6 +1,9 @@
 package compile
 
 import (
+	"io/ioutil"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/unreal/fexcel/fexcel"
@@ -56,6 +59,58 @@ func TestPrinter(t *testing.T) {
 		}
 	}
 
+}
+
+func TestGolen(t *testing.T) {
+	p, err := NewPrinter("testdata/test.xlsx", fexcel.FileConfig{
+		Numregs: "A2",
+		Posregs: "D2",
+		Sheet:   "Data",
+		Offset:  1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	filenames := []string{"test"}
+	for _, fname := range filenames {
+		src, err := ioutil.ReadFile(filepath.Join("testdata", fname+".ls"))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		p.Reset()
+		f, err := Parse(fname+".ls", string(src))
+		if err != nil {
+			t.Errorf("Parse(%s): %s", fname+".ls", err)
+			continue
+		}
+
+		err = p.Print(f)
+		if err != nil {
+			t.Errorf("Print(%s): %s", fname+".ls", err)
+			continue
+		}
+
+		// compare against golden file
+		golden, err := ioutil.ReadFile(filepath.Join("testdata", fname+".golden"))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		sLines := strings.Split(p.Output(), "\n")
+		gLines := strings.Split(string(golden), "\n")
+
+		if len(sLines) != len(gLines) {
+			t.Errorf("line count mismatch, src: %d, golden: %d", len(sLines), len(gLines))
+		}
+
+		for i, _ := range sLines {
+			if sLines[i] != gLines[i] {
+				t.Errorf("Compare(%s) line %d: %q vs %q", fname+".ls", i+1, sLines[i], gLines[i])
+			}
+		}
+	}
 }
 
 func TestPrinterErrors(t *testing.T) {
