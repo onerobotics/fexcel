@@ -11,8 +11,9 @@ import (
 )
 
 type Location struct {
-	Axis  string // e.g. A2
-	Sheet string
+	Axis   string // e.g. A2
+	Sheet  string
+	Offset int
 }
 
 // returns a Location based on a cell specification
@@ -23,6 +24,12 @@ func NewLocation(spec string, defaultSheet string) (*Location, error) {
 	parts := strings.Split(spec, ":")
 
 	switch len(parts) {
+	case 3:
+		offset, err := strconv.Atoi(parts[2])
+		if err != nil {
+			return nil, err
+		}
+		return &Location{Sheet: parts[0], Axis: parts[1], Offset: offset}, nil
 	case 2:
 		return &Location{Sheet: parts[0], Axis: parts[1]}, nil
 	case 1:
@@ -146,7 +153,7 @@ func (f *File) readString(sheet string, col, row int) (string, error) {
 	return value, nil
 }
 
-func (f *File) readDefinition(dataType fanuc.Type, sheet string, col, row int) (d Definition, err error) {
+func (f *File) readDefinition(dataType fanuc.Type, sheet string, col, row, offset int) (d Definition, err error) {
 	d.Type = dataType
 
 	d.Id, err = f.readInt(sheet, col, row)
@@ -154,10 +161,10 @@ func (f *File) readDefinition(dataType fanuc.Type, sheet string, col, row int) (
 		return
 	}
 
-	d.Comment, err = f.readString(sheet, col+f.Config.Offset, row)
+	d.Comment, err = f.readString(sheet, col+offset, row)
 	if maxLength := MaxLengthFor(dataType); len(d.Comment) > maxLength {
 		var axis string
-		axis, err = excelize.CoordinatesToCellName(col+f.Config.Offset, row)
+		axis, err = excelize.CoordinatesToCellName(col+offset, row)
 		if err != nil {
 			return
 		}
@@ -205,7 +212,12 @@ func (f *File) Definitions(dataType fanuc.Type) ([]Definition, error) {
 			break
 		}
 
-		d, err := f.readDefinition(dataType, loc.Sheet, col, row)
+		offset := loc.Offset
+		if offset == 0 {
+			offset = f.Config.Offset
+		}
+
+		d, err := f.readDefinition(dataType, loc.Sheet, col, row, offset)
 		if err != nil {
 			return nil, err
 		}
