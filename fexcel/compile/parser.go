@@ -99,9 +99,16 @@ func (p *parser) parseFile() *File {
 				f.Nodes = append(f.Nodes, p.parseText())
 			}
 		default:
-			if p.lit == "&" {
+			switch p.lit {
+			case "&":
 				f.Nodes = append(f.Nodes, p.parsePointer())
-			} else {
+			case "$":
+				if p.scanner.Peek() == '{' {
+					f.Nodes = append(f.Nodes, p.parseVar())
+				} else {
+					f.Nodes = append(f.Nodes, p.parseText())
+				}
+			default:
 				f.Nodes = append(f.Nodes, p.parseText())
 			}
 		}

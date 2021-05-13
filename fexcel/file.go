@@ -184,6 +184,10 @@ func (f *File) AllDefinitions() (map[Type][]Definition, error) {
 	defs := make(map[Type][]Definition)
 
 	for t, _ := range f.Locations {
+		if t == Constant {
+			continue
+		}
+
 		d, err := f.Definitions(t)
 		if err != nil {
 			return nil, err

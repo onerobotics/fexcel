@@ -8,7 +8,7 @@ AUTO_SINGULARITY_HEADER;
 /MN
  : ! this is a valid file ;
  : R{one}=R{two}+R{three} ;
- : J PR{home} 100% CNT100 ;
+ : J PR{home} ${HOME_SPEED}% CNT${HOME_CNT} ;
  : PR{lpos}=LPOS ;
  : PR{jpos}=JPOS ;
 /POS
