@@ -17,19 +17,25 @@ type Location struct {
 }
 
 // returns a Location based on a cell specification
-// spec can be in the form of Sheet:Cell or just Cell
+// spec can be in the following forms:
+//
+//   Offset:Sheet:Cell
+//          Sheet:Cell
+//                Cell
+//
 // if the sheet is not provided in the spec, the default
 // sheet is used.
+//
 func NewLocation(spec string, defaultSheet string) (*Location, error) {
 	parts := strings.Split(spec, ":")
 
 	switch len(parts) {
 	case 3:
-		offset, err := strconv.Atoi(parts[2])
+		offset, err := strconv.Atoi(parts[0])
 		if err != nil {
 			return nil, err
 		}
-		return &Location{Sheet: parts[0], Axis: parts[1], Offset: offset}, nil
+		return &Location{Sheet: parts[1], Axis: parts[2], Offset: offset}, nil
 	case 2:
 		return &Location{Sheet: parts[0], Axis: parts[1]}, nil
 	case 1:

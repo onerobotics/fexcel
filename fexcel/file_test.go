@@ -192,10 +192,12 @@ func TestNewLocation(t *testing.T) {
 		defaultSheet string
 		expAxis      string
 		expSheet     string
+		expOffset    int
 	}{
-		{"A2", "Foo", "A2", "Foo"},
-		{"Bar:A2", "Foo", "A2", "Bar"},
-		{"D2", "Baz", "D2", "Baz"},
+		{"A2", "Foo", "A2", "Foo", 0},
+		{"Bar:A2", "Foo", "A2", "Bar", 0},
+		{"D2", "Baz", "D2", "Baz", 0},
+		{"5:Bar:A2", "Foo", "A2", "Bar", 5},
 	}
 
 	for _, test := range tests {
