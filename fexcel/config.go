@@ -5,25 +5,25 @@ import (
 	"fmt"
 
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
-	fanuc "github.com/onerobotics/go-fanuc"
 )
 
 type FileConfig struct {
-	Numregs string // e.g. A2 or Sheet1:A2
-	Posregs string
-	Ualms   string
-	Rins    string
-	Routs   string
-	Dins    string
-	Douts   string
-	Gins    string
-	Gouts   string
-	Ains    string
-	Aouts   string
-	Sregs   string
-	Flags   string
-	Sheet   string
-	Offset  int
+	Constants string
+	Numregs   string // e.g. A2 or Sheet1:A2 or Offset:Sheet1:A2
+	Posregs   string
+	Ualms     string
+	Rins      string
+	Routs     string
+	Dins      string
+	Douts     string
+	Gins      string
+	Gouts     string
+	Ains      string
+	Aouts     string
+	Sregs     string
+	Flags     string
+	Sheet     string
+	Offset    int
 }
 
 type Config struct {
@@ -46,10 +46,10 @@ func (c *FileConfig) Count() (i int) {
 	return i
 }
 
-func (c *FileConfig) Locations() (map[fanuc.Type][]*Location, error) {
-	types := []fanuc.Type{fanuc.Numreg, fanuc.Posreg, fanuc.Ualm, fanuc.Rin, fanuc.Rout, fanuc.Din, fanuc.Dout, fanuc.Gin, fanuc.Gout, fanuc.Ain, fanuc.Aout, fanuc.Sreg, fanuc.Flag}
+func (c *FileConfig) Locations() (map[Type][]*Location, error) {
+	types := []Type{Constant, Numreg, Posreg, Ualm, Rin, Rout, Din, Dout, Gin, Gout, Ain, Aout, Sreg, Flag}
 
-	locations := make(map[fanuc.Type][]*Location)
+	locations := make(map[Type][]*Location)
 	for _, t := range types {
 		spec := c.SpecFor(t)
 		if spec != "" {
@@ -79,7 +79,7 @@ func (c *FileConfig) CheckHeaders() error {
 			}
 
 			if row < 2 {
-				return fmt.Errorf("Cell spec for %ss (%s) must be in row 2 or lower for headers option", t.VerboseName(), c.SpecFor(t))
+				return fmt.Errorf("Cell spec for %ss (%s) must be in row 2 or lower for headers option", t, c.SpecFor(t))
 			}
 		}
 	}
@@ -133,33 +133,35 @@ func (c *FileConfig) Validate() error {
 	return nil
 }
 
-func (c *FileConfig) SpecFor(t fanuc.Type) string {
+func (c *FileConfig) SpecFor(t Type) string {
 	switch t {
-	case fanuc.Numreg:
+	case Constant:
+		return c.Constants
+	case Numreg:
 		return c.Numregs
-	case fanuc.Posreg:
+	case Posreg:
 		return c.Posregs
-	case fanuc.Ualm:
+	case Ualm:
 		return c.Ualms
-	case fanuc.Rin:
+	case Rin:
 		return c.Rins
-	case fanuc.Rout:
+	case Rout:
 		return c.Routs
-	case fanuc.Din:
+	case Din:
 		return c.Dins
-	case fanuc.Dout:
+	case Dout:
 		return c.Douts
-	case fanuc.Gin:
+	case Gin:
 		return c.Gins
-	case fanuc.Gout:
+	case Gout:
 		return c.Gouts
-	case fanuc.Ain:
+	case Ain:
 		return c.Ains
-	case fanuc.Aout:
+	case Aout:
 		return c.Aouts
-	case fanuc.Sreg:
+	case Sreg:
 		return c.Sregs
-	case fanuc.Flag:
+	case Flag:
 		return c.Flags
 	}
 

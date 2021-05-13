@@ -5,8 +5,6 @@ import (
 	"net/http/httptest"
 	"sync/atomic"
 	"testing"
-
-	fanuc "github.com/onerobotics/go-fanuc"
 )
 
 func TestNewSetCommandErrors(t *testing.T) {
@@ -74,8 +72,8 @@ func TestSetCommand(t *testing.T) {
 	}
 
 	for _, host := range hosts {
-		if count := result.Counts[host][fanuc.Numreg]; count != 4 {
-			t.Errorf("Result.Counts[%s][%s]: Got %d, want 4", host, fanuc.Numreg, count)
+		if count := result.Counts[host][Numreg]; count != 4 {
+			t.Errorf("Result.Counts[%s][%s]: Got %d, want 4", host, Numreg, count)
 		}
 	}
 

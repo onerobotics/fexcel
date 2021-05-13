@@ -7,11 +7,27 @@ import (
 	fanuc "github.com/onerobotics/go-fanuc"
 )
 
+var fanucType = [...]fanuc.Type{
+	Numreg: fanuc.Numreg,
+	Posreg: fanuc.Posreg,
+	Ualm:   fanuc.Ualm,
+	Ain:    fanuc.Ain,
+	Aout:   fanuc.Aout,
+	Din:    fanuc.Din,
+	Dout:   fanuc.Dout,
+	Gin:    fanuc.Gin,
+	Gout:   fanuc.Gout,
+	Rin:    fanuc.Rin,
+	Rout:   fanuc.Rout,
+	Sreg:   fanuc.Sreg,
+	Flag:   fanuc.Flag,
+}
+
 type Target struct {
 	client fanuc.Client
 
 	Name     string
-	Comments map[fanuc.Type]map[int]string
+	Comments map[Type]map[int]string
 }
 
 func NewTarget(path string, timeout int) (*Target, error) {
@@ -26,16 +42,16 @@ func NewTarget(path string, timeout int) (*Target, error) {
 	var t Target
 	t.client = client
 	t.Name = path
-	t.Comments = make(map[fanuc.Type]map[int]string)
+	t.Comments = make(map[Type]map[int]string)
 
 	return &t, nil
 }
 
-func (t *Target) GetComments(typ fanuc.Type) error {
+func (t *Target) GetComments(typ Type) error {
 	t.Comments[typ] = make(map[int]string)
 
 	switch typ {
-	case fanuc.Numreg:
+	case Numreg:
 		numregs, err := t.client.NumericRegisters()
 		if err != nil {
 			return err
@@ -43,7 +59,7 @@ func (t *Target) GetComments(typ fanuc.Type) error {
 		for _, r := range numregs {
 			t.Comments[typ][r.Id] = r.Comment
 		}
-	case fanuc.Posreg:
+	case Posreg:
 		posregs, err := t.client.PositionRegisters()
 		if err != nil {
 			return err
@@ -51,8 +67,8 @@ func (t *Target) GetComments(typ fanuc.Type) error {
 		for _, r := range posregs {
 			t.Comments[typ][r.Id] = r.Comment
 		}
-	case fanuc.Ain, fanuc.Aout, fanuc.Din, fanuc.Dout, fanuc.Flag, fanuc.Gin, fanuc.Gout, fanuc.Rin, fanuc.Rout:
-		ports, err := t.client.IO(typ)
+	case Ain, Aout, Din, Dout, Flag, Gin, Gout, Rin, Rout:
+		ports, err := t.client.IO(fanucType[typ])
 		if err != nil {
 			return err
 		}
@@ -64,9 +80,9 @@ func (t *Target) GetComments(typ fanuc.Type) error {
 	return nil
 }
 
-func (t *Target) SetComment(typ fanuc.Type, id int, comment string) error {
+func (t *Target) SetComment(typ Type, id int, comment string) error {
 	if c, ok := t.client.(*fanuc.HTTPClient); ok {
-		return c.SetComment(typ, id, comment)
+		return c.SetComment(fanucType[typ], id, comment)
 	} else {
 		return errors.New("need a fanuc.HTTPClient")
 	}

@@ -2,8 +2,6 @@ package fexcel
 
 import (
 	"testing"
-
-	fanuc "github.com/onerobotics/go-fanuc"
 )
 
 func TestDiffCompare(t *testing.T) {
@@ -19,7 +17,7 @@ func TestDiffCompare(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	results, err := cmd.Compare(fanuc.Numreg)
+	results, err := cmd.Compare(Numreg)
 	if err != nil {
 		t.Fatal(err)
 	}

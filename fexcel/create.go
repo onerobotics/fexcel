@@ -52,9 +52,9 @@ func NewCreator(path string, cfg Config, headers bool, targetPath string) (*Crea
 func (c *Creator) Create(w io.Writer) error {
 	fmt.Fprintf(w, "Creating file: %s\n", c.file.path)
 
-	for typ, location := range c.file.Locations {
-		fmt.Fprintf(w, "Reading target %s comments\n", typ.VerboseName())
-		err := c.target.GetComments(typ)
+	for t, location := range c.file.Locations {
+		fmt.Fprintf(w, "Reading target %s comments\n", t)
+		err := c.target.GetComments(t)
 		if err != nil {
 			return err
 		}
@@ -70,7 +70,7 @@ func (c *Creator) Create(w io.Writer) error {
 
 		// write header
 		if c.headers {
-			err = c.file.SetValue(location.Sheet, col, row-1, typ.VerboseName()+"s")
+			err = c.file.SetValue(location.Sheet, col, row-1, t.String()+"s")
 			if err != nil {
 				return err
 			}
@@ -78,14 +78,14 @@ func (c *Creator) Create(w io.Writer) error {
 
 		// maps are not ordered, so let's create an ids slice we can sort
 		var ids []int
-		for id, _ := range c.target.Comments[typ] {
+		for id, _ := range c.target.Comments[t] {
 			ids = append(ids, id)
 		}
 		sort.Ints(ids)
 
-		fmt.Fprintf(w, "Writing %d %s comments\n", len(ids), typ.VerboseName())
+		fmt.Fprintf(w, "Writing %d %s comments\n", len(ids), t)
 		for _, id := range ids {
-			comment := c.target.Comments[typ][id]
+			comment := c.target.Comments[t][id]
 			err := c.file.SetValue(location.Sheet, col, row, id)
 			if err != nil {
 				return err

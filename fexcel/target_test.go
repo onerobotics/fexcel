@@ -32,12 +32,12 @@ func TestGetComments(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = target.GetComments(fanuc.Numreg)
+	err = target.GetComments(Numreg)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if numregs, ok := target.Comments[fanuc.Numreg]; ok {
+	if numregs, ok := target.Comments[Numreg]; ok {
 		if len(numregs) != 200 {
 			t.Fatalf("Only got %d numregs. Want 200", len(numregs))
 		}

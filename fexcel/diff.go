@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/olekukonko/tablewriter"
-	fanuc "github.com/onerobotics/go-fanuc"
 )
 
 type DiffCommand struct {
@@ -75,7 +74,7 @@ func (c Comparison) row() []string {
 	return row
 }
 
-func (d *DiffCommand) Compare(t fanuc.Type) (comparisons []Comparison, err error) {
+func (d *DiffCommand) Compare(t Type) (comparisons []Comparison, err error) {
 	definitions, err := d.file.Definitions(t)
 	if err != nil {
 		return
@@ -110,13 +109,13 @@ func (d *DiffCommand) Compare(t fanuc.Type) (comparisons []Comparison, err error
 	return
 }
 
-func (d *DiffCommand) FprintTable(w io.Writer, t fanuc.Type, all bool) error {
+func (d *DiffCommand) FprintTable(w io.Writer, t Type, all bool) error {
 	comparisons, err := d.Compare(t)
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprintf(w, "%ss\n", t.VerboseName())
+	fmt.Fprintf(w, "%ss\n", t)
 	table := tablewriter.NewWriter(w)
 	table.SetAutoWrapText(false)
 	table.SetAutoFormatHeaders(false)
@@ -138,7 +137,7 @@ func (d *DiffCommand) FprintTable(w io.Writer, t fanuc.Type, all bool) error {
 	return nil
 }
 
-func (d *DiffCommand) Locations() map[fanuc.Type]*Location {
+func (d *DiffCommand) Locations() map[Type]*Location {
 	return d.file.Locations
 }
 

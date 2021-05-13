@@ -5,8 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-
-	fanuc "github.com/onerobotics/go-fanuc"
 )
 
 func TestNewCreator(t *testing.T) {
@@ -39,7 +37,7 @@ func TestNewCreator(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected an error")
 	}
-	want = "Cell spec for Numeric Registers (A1) must be in row 2 or lower for headers option"
+	want = "Cell spec for Rs (A1) must be in row 2 or lower for headers option"
 	if err.Error() != want {
 		t.Errorf("Bad error msg. Got %q, want %q", err.Error(), want)
 	}
@@ -91,7 +89,7 @@ func TestCreatorCreate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	comparisons, err := cmd.Compare(fanuc.Numreg)
+	comparisons, err := cmd.Compare(Numreg)
 	if err != nil {
 		t.Fatal(err)
 	}

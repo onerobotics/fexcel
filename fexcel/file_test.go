@@ -3,8 +3,6 @@ package fexcel
 import (
 	"path/filepath"
 	"testing"
-
-	fanuc "github.com/onerobotics/go-fanuc"
 )
 
 const testDir = "testdata"
@@ -18,11 +16,11 @@ func TestOpenFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if f.Locations[fanuc.Numreg].Sheet != "Data" {
-		t.Errorf("Bad sheet. Got %q, want %q", f.Locations[fanuc.Numreg].Sheet, "Data")
+	if f.Locations[Numreg].Sheet != "Data" {
+		t.Errorf("Bad sheet. Got %q, want %q", f.Locations[Numreg].Sheet, "Data")
 	}
-	if f.Locations[fanuc.Numreg].Axis != "A2" {
-		t.Errorf("Bad axis. Got %q, want %q", f.Locations[fanuc.Numreg].Axis, "A2")
+	if f.Locations[Numreg].Axis != "A2" {
+		t.Errorf("Bad axis. Got %q, want %q", f.Locations[Numreg].Axis, "A2")
 	}
 }
 
@@ -53,97 +51,97 @@ func TestDefinitions(t *testing.T) {
 	}
 
 	expected := []struct {
-		fanuc.Type
+		Type
 		defs []Definition
 	}{
 		{
-			fanuc.Numreg,
+			Numreg,
 			[]Definition{
-				{fanuc.Numreg, 1, "this is an extremely long comment"},
-				{fanuc.Numreg, 2, "two"},
-				{fanuc.Numreg, 3, "three"},
-				{fanuc.Numreg, 4, "four"},
-				{fanuc.Numreg, 5, "five"},
+				{Numreg, 1, "this is an extremely long comment"},
+				{Numreg, 2, "two"},
+				{Numreg, 3, "three"},
+				{Numreg, 4, "four"},
+				{Numreg, 5, "five"},
 			},
 		},
 		{
-			fanuc.Posreg,
+			Posreg,
 			[]Definition{
-				{fanuc.Posreg, 1, "pr1"},
-				{fanuc.Posreg, 2, "pr2"},
-				{fanuc.Posreg, 3, "pr3"},
-				{fanuc.Posreg, 4, "pr4"},
-				{fanuc.Posreg, 5, "pr5"},
+				{Posreg, 1, "pr1"},
+				{Posreg, 2, "pr2"},
+				{Posreg, 3, "pr3"},
+				{Posreg, 4, "pr4"},
+				{Posreg, 5, "pr5"},
 			},
 		},
 		{
-			fanuc.Sreg,
+			Sreg,
 			[]Definition{
-				{fanuc.Sreg, 1, "sreg1"},
-				{fanuc.Sreg, 2, "sreg2"},
+				{Sreg, 1, "sreg1"},
+				{Sreg, 2, "sreg2"},
 			},
 		},
 		{
-			fanuc.Din,
+			Din,
 			[]Definition{
-				{fanuc.Din, 1, "din1"},
-				{fanuc.Din, 2, "din2"},
-				{fanuc.Din, 3, "din3"},
+				{Din, 1, "din1"},
+				{Din, 2, "din2"},
+				{Din, 3, "din3"},
 			},
 		},
 		{
-			fanuc.Dout,
+			Dout,
 			[]Definition{
-				{fanuc.Dout, 1, "dout1"},
-				{fanuc.Dout, 2, "dout2"},
-				{fanuc.Dout, 3, "dout3"},
-				{fanuc.Dout, 4, "dout4"},
+				{Dout, 1, "dout1"},
+				{Dout, 2, "dout2"},
+				{Dout, 3, "dout3"},
+				{Dout, 4, "dout4"},
 			},
 		},
 		{
-			fanuc.Rin,
+			Rin,
 			[]Definition{
-				{fanuc.Rin, 1, "rin1"},
-				{fanuc.Rin, 2, "rin2"},
+				{Rin, 1, "rin1"},
+				{Rin, 2, "rin2"},
 			},
 		},
 		{
-			fanuc.Rout,
+			Rout,
 			[]Definition{
-				{fanuc.Rout, 1, "rout1"},
+				{Rout, 1, "rout1"},
 			},
 		},
 		{
-			fanuc.Gin,
+			Gin,
 			[]Definition{
-				{fanuc.Gin, 1, "gin1"},
+				{Gin, 1, "gin1"},
 			},
 		},
 		{
-			fanuc.Gout,
+			Gout,
 			[]Definition{
-				{fanuc.Gout, 1, "gout1"},
+				{Gout, 1, "gout1"},
 			},
 		},
 		{
-			fanuc.Ain,
+			Ain,
 			[]Definition{
-				{fanuc.Ain, 1, "ain1"},
+				{Ain, 1, "ain1"},
 			},
 		},
 		{
-			fanuc.Aout,
+			Aout,
 			[]Definition{
-				{fanuc.Aout, 1, "aout1"},
+				{Aout, 1, "aout1"},
 			},
 		},
 		{
-			fanuc.Ualm,
+			Ualm,
 			[]Definition{
-				{fanuc.Ualm, 1, "test"},
-				{fanuc.Ualm, 2, "test two"},
-				{fanuc.Ualm, 3, "test three"},
-				{fanuc.Ualm, 4, "test four"},
+				{Ualm, 1, "test"},
+				{Ualm, 2, "test two"},
+				{Ualm, 3, "test three"},
+				{Ualm, 4, "test four"},
 			},
 		},
 	}
@@ -180,7 +178,7 @@ func TestDefinitions(t *testing.T) {
 		t.Fatal("Expected 1 warning")
 	}
 
-	want := "comment in [Data]B2 for R[1] will be truncated to \"this is an extre\" (length 33 > max length 16 for Numeric Registers)"
+	want := "comment in [Data]B2 for R[1] will be truncated to \"this is an extre\" (length 33 > max length 16 for Rs)"
 	if f.Warnings[0] != want {
 		t.Errorf("Bad warning. Got %q, want %q", f.Warnings[0], want)
 	}

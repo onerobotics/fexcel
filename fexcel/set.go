@@ -12,7 +12,7 @@ type SetCommand struct {
 	file    *File
 	targets []*Target
 
-	Definitions map[fanuc.Type][]Definition
+	Definitions map[Type][]Definition
 	Errors      map[string]*errorList
 }
 
@@ -62,11 +62,11 @@ func NewSetCommand(fpath string, cfg Config, targets ...string) (*SetCommand, er
 
 // host -> type -> count
 type setResult struct {
-	Counts map[string]map[fanuc.Type]int
+	Counts map[string]map[Type]int
 	mux    sync.Mutex
 }
 
-func (s *setResult) Inc(host string, t fanuc.Type) {
+func (s *setResult) Inc(host string, t Type) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
@@ -75,9 +75,9 @@ func (s *setResult) Inc(host string, t fanuc.Type) {
 
 func newSetResult(targets []*Target) *setResult {
 	var result setResult
-	result.Counts = make(map[string]map[fanuc.Type]int)
+	result.Counts = make(map[string]map[Type]int)
 	for _, t := range targets {
-		result.Counts[t.Name] = make(map[fanuc.Type]int)
+		result.Counts[t.Name] = make(map[Type]int)
 	}
 	return &result
 }

@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
-	fanuc "github.com/onerobotics/go-fanuc"
 )
 
 type Location struct {
@@ -50,7 +49,7 @@ func NewLocation(spec string, defaultSheet string) (*Location, error) {
 }
 
 type Definition struct {
-	Type    fanuc.Type
+	Type    Type
 	Id      int
 	Comment string
 }
@@ -60,7 +59,7 @@ type File struct {
 	xlsx *excelize.File
 
 	Config    FileConfig
-	Locations map[fanuc.Type]*Location
+	Locations map[Type]*Location
 	Warnings  []string
 }
 
@@ -73,8 +72,8 @@ func newFile(path string, cfg FileConfig) (*File, error) {
 	f := File{path: path, Config: cfg}
 
 	// set locations based on config
-	f.Locations = make(map[fanuc.Type]*Location)
-	types := []fanuc.Type{fanuc.Numreg, fanuc.Posreg, fanuc.Ualm, fanuc.Ain, fanuc.Aout, fanuc.Din, fanuc.Dout, fanuc.Gin, fanuc.Gout, fanuc.Rin, fanuc.Rout, fanuc.Sreg, fanuc.Flag}
+	f.Locations = make(map[Type]*Location)
+	types := []Type{Constant, Numreg, Posreg, Ualm, Ain, Aout, Din, Dout, Gin, Gout, Rin, Rout, Sreg, Flag}
 	for _, t := range types {
 		spec := cfg.SpecFor(t)
 		if spec != "" {
@@ -159,8 +158,8 @@ func (f *File) readString(sheet string, col, row int) (string, error) {
 	return value, nil
 }
 
-func (f *File) readDefinition(dataType fanuc.Type, sheet string, col, row, offset int) (d Definition, err error) {
-	d.Type = dataType
+func (f *File) readDefinition(t Type, sheet string, col, row, offset int) (d Definition, err error) {
+	d.Type = t
 
 	d.Id, err = f.readInt(sheet, col, row)
 	if err != nil {
@@ -168,21 +167,21 @@ func (f *File) readDefinition(dataType fanuc.Type, sheet string, col, row, offse
 	}
 
 	d.Comment, err = f.readString(sheet, col+offset, row)
-	if maxLength := MaxLengthFor(dataType); len(d.Comment) > maxLength {
+	if maxLength := MaxLengthFor(t); len(d.Comment) > maxLength {
 		var axis string
 		axis, err = excelize.CoordinatesToCellName(col+offset, row)
 		if err != nil {
 			return
 		}
 
-		f.Warnings = append(f.Warnings, fmt.Sprintf("comment in [%s]%s for %s[%d] will be truncated to %q (length %d > max length %d for %ss)", sheet, axis, d.Type, d.Id, d.Comment[:maxLength], len(d.Comment), maxLength, dataType.VerboseName()))
+		f.Warnings = append(f.Warnings, fmt.Sprintf("comment in [%s]%s for %s[%d] will be truncated to %q (length %d > max length %d for %ss)", sheet, axis, d.Type, d.Id, d.Comment[:maxLength], len(d.Comment), maxLength, t))
 	}
 
 	return
 }
 
-func (f *File) AllDefinitions() (map[fanuc.Type][]Definition, error) {
-	defs := make(map[fanuc.Type][]Definition)
+func (f *File) AllDefinitions() (map[Type][]Definition, error) {
+	defs := make(map[Type][]Definition)
 
 	for t, _ := range f.Locations {
 		d, err := f.Definitions(t)
@@ -196,15 +195,15 @@ func (f *File) AllDefinitions() (map[fanuc.Type][]Definition, error) {
 	return defs, nil
 }
 
-func (f *File) Definitions(dataType fanuc.Type) ([]Definition, error) {
-	loc, defined := f.Locations[dataType]
+func (f *File) Definitions(t Type) ([]Definition, error) {
+	loc, defined := f.Locations[t]
 	if !defined {
-		return nil, fmt.Errorf("Location for %s not defined", dataType)
+		return nil, fmt.Errorf("Location for %s not defined", t)
 	}
 
 	col, row, err := excelize.CellNameToCoordinates(loc.Axis)
 	if err != nil {
-		return nil, fmt.Errorf("Invalid location for %s: %q", dataType, loc.Axis)
+		return nil, fmt.Errorf("Invalid location for %s: %q", t, loc.Axis)
 	}
 
 	var defs []Definition
@@ -223,7 +222,7 @@ func (f *File) Definitions(dataType fanuc.Type) ([]Definition, error) {
 			offset = f.Config.Offset
 		}
 
-		d, err := f.readDefinition(dataType, loc.Sheet, col, row, offset)
+		d, err := f.readDefinition(t, loc.Sheet, col, row, offset)
 		if err != nil {
 			return nil, err
 		}
