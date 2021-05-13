@@ -247,3 +247,46 @@ func (f *File) SetValue(sheet string, col int, row int, value interface{}) error
 func (f *File) CreateSheet(name string) {
 	f.xlsx.NewSheet(name)
 }
+
+func (f *File) Constants() (map[string]string, error) {
+	loc, defined := f.Locations[Constant]
+	if !defined {
+		return nil, fmt.Errorf("Location for %s not defined", Constant)
+	}
+
+	constants := make(map[string]string)
+
+	col, row, err := excelize.CellNameToCoordinates(loc.Axis)
+	if err != nil {
+		return nil, fmt.Errorf("Invalid location for %s: %q", Constant, loc.Axis)
+	}
+
+	for ; ; row++ {
+		// check for blank identifier
+		id, err := f.readString(loc.Sheet, col, row)
+		if err != nil {
+			return nil, err
+		}
+		if id == "" {
+			break
+		}
+
+		offset := loc.Offset
+		if offset == 0 {
+			offset = f.Config.Offset
+		}
+
+		value, err := f.readString(loc.Sheet, col+1, row)
+		if err != nil {
+			return nil, err
+		}
+		if value == "" {
+			f.Warnings = append(f.Warnings, fmt.Sprintf("Definition for constant %q is blank", id))
+			continue
+		}
+
+		constants[id] = value
+	}
+
+	return constants, nil
+}

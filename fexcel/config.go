@@ -33,7 +33,7 @@ type Config struct {
 }
 
 func (c *FileConfig) Specs() []string {
-	return []string{c.Numregs, c.Posregs, c.Ualms, c.Rins, c.Routs, c.Dins, c.Douts, c.Gins, c.Gouts, c.Ains, c.Aouts, c.Sregs, c.Flags}
+	return []string{c.Constants, c.Numregs, c.Posregs, c.Ualms, c.Rins, c.Routs, c.Dins, c.Douts, c.Gins, c.Gouts, c.Ains, c.Aouts, c.Sregs, c.Flags}
 }
 
 func (c *FileConfig) Count() (i int) {

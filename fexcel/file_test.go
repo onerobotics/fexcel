@@ -24,25 +24,52 @@ func TestOpenFile(t *testing.T) {
 	}
 }
 
+func TestConstants(t *testing.T) {
+	fpath := filepath.Join(testDir, "test.xlsx")
+
+	f, err := OpenFile(fpath, FileConfig{
+		Sheet:     "Data",
+		Offset:    1,
+		Constants: "M2",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	constants, err := f.Constants()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if constants["FOO"] != "bar" {
+		t.Errorf("Expected %q, got %q", "bar", constants["FOO"])
+	}
+
+	if constants["BAZ"] != "3.14" {
+		t.Errorf("Expected %q, got %q", "3.14", constants["BAZ"])
+	}
+}
+
 func TestDefinitions(t *testing.T) {
 	fpath := filepath.Join(testDir, "test.xlsx")
 
 	cfg := FileConfig{
-		Sheet:   "Data",
-		Offset:  1,
-		Numregs: "A2",
-		Posregs: "D2",
-		Sregs:   "G2",
-		Flags:   "J2",
-		Dins:    "IO:A2",
-		Douts:   "IO:C2",
-		Rins:    "IO:E2",
-		Routs:   "IO:G2",
-		Gins:    "IO:I2",
-		Gouts:   "IO:K2",
-		Ains:    "IO:M2",
-		Aouts:   "IO:O2",
-		Ualms:   "Alarms:A2",
+		Sheet:     "Data",
+		Offset:    1,
+		Constants: "M2",
+		Numregs:   "A2",
+		Posregs:   "D2",
+		Sregs:     "G2",
+		Flags:     "J2",
+		Dins:      "IO:A2",
+		Douts:     "IO:C2",
+		Rins:      "IO:E2",
+		Routs:     "IO:G2",
+		Gins:      "IO:I2",
+		Gouts:     "IO:K2",
+		Ains:      "IO:M2",
+		Aouts:     "IO:O2",
+		Ualms:     "Alarms:A2",
 	}
 
 	f, err := OpenFile(fpath, cfg)
