@@ -65,6 +65,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&globalCfg.FileConfig.Sheet, "sheet", "Sheet1", "default sheet to look at when unspecified in the start cell")
 	rootCmd.PersistentFlags().IntVar(&globalCfg.FileConfig.Offset, "offset", 1, "column offset between ids and comments")
 
+	rootCmd.PersistentFlags().StringVar(&globalCfg.FileConfig.Constants, "constants", "", "start cell of constant ids")
 	rootCmd.PersistentFlags().StringVar(&globalCfg.FileConfig.Numregs, "numregs", "", "start cell of numeric register ids")
 	rootCmd.PersistentFlags().StringVar(&globalCfg.FileConfig.Posregs, "posregs", "", "start cell of position register ids")
 	rootCmd.PersistentFlags().StringVar(&globalCfg.FileConfig.Sregs, "sregs", "", "start cell of string register ids")
@@ -155,7 +156,7 @@ func rootMain(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		fmt.Printf("Found %d %ss.\n", len(defs), d.VerboseName())
+		fmt.Printf("Found %d %ss.\n", len(defs), d)
 	}
 
 	return nil
