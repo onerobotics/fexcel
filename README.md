@@ -27,6 +27,7 @@ Run `fexcel help` for more information on usage.
 
 | Command | Description |
 | ------- | ----------- |
+| compile | Compile a fexcel source file to a FANUC .ls file |
 | create  | Create a spreadsheet based on a target's comments |
 | diff    | Compare robot comments to spreadsheet (remote or local) |
 | help    | Help about any command |
