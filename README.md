@@ -21,13 +21,6 @@ Make sure KAREL is unlocked under `Setup > Host Comm > HTTP`.
     fexcel [flags]
     fexcel [commmand] [flags]
 
-## Example
-
-Use `fexcel comment` to set the comments on multiple remote robots
-from an Excel spreadsheet.
-
-    > fexcel comment ./path/to/spreadsheet.xlsx 127.0.0.101 127.0.0.102 --sheet Data ---numregs A2 --posregs D2 --dins IO:A2
-
 Run `fexcel help` for more information on usage.
 
 ## Commands
