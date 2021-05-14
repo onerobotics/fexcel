@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
+	"github.com/onerobotics/fexcel/fexcel"
+	"github.com/onerobotics/fexcel/fexcel/compile"
 	"github.com/spf13/cobra"
-	"github.com/unreal/fexcel/fexcel"
-	"github.com/unreal/fexcel/fexcel/compile"
 )
 
 var compileCmd = &cobra.Command{

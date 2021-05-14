@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/unreal/fexcel/cmd"
+	"github.com/onerobotics/fexcel/cmd"
 )
 
 func main() {

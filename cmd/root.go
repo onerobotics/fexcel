@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/onerobotics/fexcel/fexcel"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/unreal/fexcel/fexcel"
 )
 
 const configFile = ".fexcel.yaml"
