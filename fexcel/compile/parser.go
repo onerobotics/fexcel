@@ -17,7 +17,7 @@ type parser struct {
 
 func (p *parser) init(filename string, src string) {
 	p.scanner.Init(strings.NewReader(src))
-	p.scanner.Mode = scanner.ScanIdents | scanner.ScanInts
+	p.scanner.Mode = scanner.ScanIdents | scanner.ScanInts | scanner.ScanFloats
 	p.scanner.Filename = filename
 	p.scanner.Whitespace = 0
 	p.scanner.Error = func(s *scanner.Scanner, msg string) {
