@@ -58,9 +58,11 @@ func setMain(cmd *cobra.Command, args []string) error {
 	header := []string{""}
 	sheetRow := []string{filepath.Base(fpath)}
 	total := 0
-	for t, defs := range setCmd.Definitions {
+
+	types := []fexcel.Type{fexcel.Ain, fexcel.Aout, fexcel.Din, fexcel.Dout, fexcel.Flag, fexcel.Gin, fexcel.Gout, fexcel.Numreg, fexcel.Posreg, fexcel.Rin, fexcel.Rout, fexcel.Sreg, fexcel.Ualm}
+	for _, t := range types {
 		header = append(header, t.String())
-		defCount := len(defs)
+		defCount := len(setCmd.Definitions[t])
 		total += defCount
 		sheetRow = append(sheetRow, strconv.Itoa(defCount))
 	}
@@ -72,7 +74,8 @@ func setMain(cmd *cobra.Command, args []string) error {
 	for _, host := range setCmd.Hosts() {
 		total = 0
 		row := []string{host}
-		for t, _ := range setCmd.Definitions {
+
+		for _, t := range types {
 			count := result.Counts[host][t]
 			row = append(row, strconv.Itoa(count))
 			total += count
