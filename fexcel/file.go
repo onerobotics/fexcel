@@ -280,7 +280,7 @@ func (f *File) Constants() (map[string]string, error) {
 			offset = f.Config.Offset
 		}
 
-		value, err := f.readString(loc.Sheet, col+1, row)
+		value, err := f.readString(loc.Sheet, col+offset, row)
 		if err != nil {
 			return nil, err
 		}
