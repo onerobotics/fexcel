@@ -19,6 +19,10 @@ const (
 	Rout
 	Sreg
 	Flag
+	Uin
+	Uout
+	Sin
+	Sout
 )
 
 var types = [...]string{
@@ -36,6 +40,10 @@ var types = [...]string{
 	Rout:     "RO",
 	Sreg:     "SR",
 	Flag:     "F",
+	Uin:      "UI",
+	Uout:     "UOUT",
+	Sin:      "SI",
+	Sout:     "SO",
 }
 
 func (t Type) String() string {

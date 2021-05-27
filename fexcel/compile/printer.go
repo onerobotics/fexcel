@@ -52,6 +52,48 @@ func NewPrinter(fpath string, cfg fexcel.FileConfig) (*Printer, error) {
 		p.Constants = make(map[string]string)
 	}
 
+	p.Definitions["UI"] = map[string]int{
+		"IMSTP":      1,
+		"Hold":       2,
+		"SFSPD":      3,
+		"CycleStop":  4,
+		"FaultReset": 5,
+		"Start":      6,
+		"Home":       7,
+		"Enable":     8,
+		"ProdStart":  18,
+	}
+	p.Definitions["UO"] = map[string]int{
+		"CmdEnabled":  1,
+		"SystemReady": 2,
+		"PrgRunning":  3,
+		"PrgPaused":   4,
+		"MotionHeld":  5,
+		"Fault":       6,
+		"AtPerch":     7,
+		"TPEnabled":   8,
+		"BattAlarm":   9,
+		"Busy":        10,
+	}
+	p.Definitions["SI"] = map[string]int{
+		"FaultReset": 1,
+		"Remote":     2,
+		"Hold":       3,
+		"UserPB1":    4,
+		"UserPB2":    5,
+		"CycleStart": 6,
+	}
+	p.Definitions["SO"] = map[string]int{
+		"RemoteLED":  0,
+		"CycleStart": 1,
+		"Hold":       2,
+		"FaultLED":   3,
+		"BattAlarm":  4,
+		"UserLED1":   5,
+		"UserLED2":   6,
+		"TPEnabled":  7,
+	}
+
 	return &p, nil
 }
 
