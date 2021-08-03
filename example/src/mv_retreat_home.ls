@@ -1,0 +1,10 @@
+/PROG  MV_RETREAT_HOME
+/ATTR
+DEFAULT_GROUP	= 1,*,*,*,*;
+/MN
+ : CALL GET_ZONE ;
+ : IF R{zoneID}<>${ZONE_HOME},CALL UNSAFE ;
+ :  ;
+ : ! NOOP ;
+/POS
+/END

@@ -1,0 +1,9 @@
+/PROG  MV_HOME
+/ATTR
+DEFAULT_GROUP	= 1,*,*,*,*;
+/MN
+ : UFRAME_NUM=0 ;
+ : UTOOL_NUM=0 ;
+ : J PR[1:HOME] 20% CNT0 ;
+/POS
+/END

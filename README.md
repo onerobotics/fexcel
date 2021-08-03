@@ -23,6 +23,10 @@ Make sure KAREL is unlocked under `Setup > Host Comm > HTTP`.
 
 Run `fexcel help` for more information on usage.
 
+## Example
+
+There is a `fexcel compile` example located in the `./example` directory.
+
 ## Commands
 
 | Command | Description |

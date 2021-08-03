@@ -1,0 +1,8 @@
+/PROG  SV_HOME
+/ATTR
+DEFAULT_GROUP	= 1,*,*,*,*;
+/MN
+ : CALL MV_RETREAT ;
+ : CALL MV_HOME ;
+/POS
+/END

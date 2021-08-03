@@ -1,0 +1,10 @@
+/PROG  MV_PICK
+/ATTR
+DEFAULT_GROUP	= 1,*,*,*,*;
+/MN
+ : UFRAME_NUM=1 ;
+ : UTOOL_NUM=1 ;
+ : J PR[11:PICK] 500% CNT100 Tool_Offset,PR[12:PICK_APTO] ;
+ : L PR[11:PICK] 250mm/sec CNT0 ;
+/POS
+/END
