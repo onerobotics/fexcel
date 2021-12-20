@@ -65,7 +65,7 @@ There is a `fexcel compile` example located in the `./example` directory.
 
 \**start cell flags can be optionally prefixed with a sheet name that
 overrides the default `-sheet` flag. (e.g. `--numregs Data:A2`). They
-can also include a custom offset (e.g. `--dins 6:IO:A2) where digital
+can also include a custom offset (e.g. `--dins IO:A2{6}) where digital
 inputs are located on the "IO" sheet starting at A2 and the comments
 are in column G.*
 

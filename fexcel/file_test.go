@@ -222,7 +222,7 @@ func TestNewLocation(t *testing.T) {
 		{"A2", "Foo", "A2", "Foo", 0},
 		{"Bar:A2", "Foo", "A2", "Bar", 0},
 		{"D2", "Baz", "D2", "Baz", 0},
-		{"5:Bar:A2", "Foo", "A2", "Bar", 5},
+		{"Bar:A2{5}", "Foo", "A2", "Bar", 5},
 	}
 
 	for _, test := range tests {

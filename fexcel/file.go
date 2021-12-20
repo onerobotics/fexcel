@@ -3,6 +3,7 @@ package fexcel
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -15,12 +16,46 @@ type Location struct {
 	Offset int
 }
 
+var cellRegexp = regexp.MustCompile(`(\w+)(\{(\d+)\})?`)
+
+// parses the Cell Axis and (optional) offset from the end
+// of a cell spec (e.g. cell or cell{offset})
+//
+func parseCell(spec string) (cell string, offset int, err error) {
+	if !strings.Contains(spec, "{") || !strings.Contains(spec, "}") {
+		return spec, 0, nil
+	}
+
+	matches := cellRegexp.FindAllStringSubmatch(spec, -1)
+	if len(matches) != 1 {
+		return "", 0, fmt.Errorf("%q does not appear to be a valid cell spe", spec)
+	}
+
+	match := matches[0]
+	if len(match) != 4 {
+		panic("invalid cell match data")
+	}
+
+	// no offset specified
+	if match[3] == "" {
+		return spec, 0, nil
+	}
+
+	i, err := strconv.Atoi(match[3])
+	if err != nil {
+		return "", 0, err
+	}
+
+	return match[1], i, nil
+}
+
 // returns a Location based on a cell specification
 // spec can be in the following forms:
 //
-//   Offset:Sheet:Cell
-//          Sheet:Cell
-//                Cell
+//   Sheet:Cell
+//   Sheet:Cell{offset}
+//         Cell
+//         Cell{offset}
 //
 // if the sheet is not provided in the spec, the default
 // sheet is used.
@@ -29,20 +64,25 @@ func NewLocation(spec string, defaultSheet string) (*Location, error) {
 	parts := strings.Split(spec, ":")
 
 	switch len(parts) {
-	case 3:
-		offset, err := strconv.Atoi(parts[0])
+	case 2:
+		axis, offset, err := parseCell(parts[1])
 		if err != nil {
 			return nil, err
 		}
-		return &Location{Sheet: parts[1], Axis: parts[2], Offset: offset}, nil
-	case 2:
-		return &Location{Sheet: parts[0], Axis: parts[1]}, nil
+
+		return &Location{Sheet: parts[0], Axis: axis, Offset: offset}, nil
 	case 1:
-		// e.g. A2
+		// e.g. A2 or A2{5}
 		if defaultSheet == "" {
 			return nil, fmt.Errorf("cell specification %q requires a default sheet, but none has been defined", spec)
 		}
-		return &Location{Sheet: defaultSheet, Axis: spec}, nil
+
+		axis, offset, err := parseCell(parts[0])
+		if err != nil {
+			return nil, err
+		}
+
+		return &Location{Sheet: defaultSheet, Axis: axis, Offset: offset}, nil
 	}
 
 	return nil, fmt.Errorf("Cell specification %q is invalid. Should be in the form [Sheet:]Cell e.g. Sheet1:A2 or just A2.", spec)
