@@ -11,6 +11,7 @@ import (
 )
 
 type Location struct {
+	Type
 	Axis   string // e.g. A2
 	Sheet  string
 	Offset int
@@ -60,7 +61,7 @@ func parseCell(spec string) (cell string, offset int, err error) {
 // if the sheet is not provided in the spec, the default
 // sheet is used.
 //
-func NewLocation(spec string, defaultSheet string) (*Location, error) {
+func NewLocation(t Type, spec string, defaultSheet string) (*Location, error) {
 	parts := strings.Split(spec, ":")
 
 	switch len(parts) {
@@ -70,7 +71,7 @@ func NewLocation(spec string, defaultSheet string) (*Location, error) {
 			return nil, err
 		}
 
-		return &Location{Sheet: parts[0], Axis: axis, Offset: offset}, nil
+		return &Location{Type: t, Sheet: parts[0], Axis: axis, Offset: offset}, nil
 	case 1:
 		// e.g. A2 or A2{5}
 		if defaultSheet == "" {
@@ -82,7 +83,7 @@ func NewLocation(spec string, defaultSheet string) (*Location, error) {
 			return nil, err
 		}
 
-		return &Location{Sheet: defaultSheet, Axis: axis, Offset: offset}, nil
+		return &Location{Type: t, Sheet: defaultSheet, Axis: axis, Offset: offset}, nil
 	}
 
 	return nil, fmt.Errorf("Cell specification %q is invalid. Should be in the form [Sheet:]Cell e.g. Sheet1:A2 or just A2.", spec)
@@ -90,6 +91,9 @@ func NewLocation(spec string, defaultSheet string) (*Location, error) {
 
 type Definition struct {
 	Type    Type
+	Sheet   string
+	Column  int
+	Row     int
 	Id      int
 	Comment string
 }
@@ -99,8 +103,19 @@ type File struct {
 	xlsx *excelize.File
 
 	Config    FileConfig
-	Locations map[Type]*Location
+	Locations []*Location
 	Warnings  []string
+}
+
+func (f *File) LocationsFor(t Type) []*Location {
+	var locations []*Location
+	for _, l := range f.Locations {
+		if l.Type == t {
+			locations = append(locations, l)
+		}
+	}
+
+	return locations
 }
 
 func newFile(path string, cfg FileConfig) (*File, error) {
@@ -111,19 +126,13 @@ func newFile(path string, cfg FileConfig) (*File, error) {
 
 	f := File{path: path, Config: cfg}
 
-	// set locations based on config
-	f.Locations = make(map[Type]*Location)
-	types := []Type{Constant, Numreg, Posreg, Ualm, Ain, Aout, Din, Dout, Gin, Gout, Rin, Rout, Sreg, Flag}
-	for _, t := range types {
-		spec := cfg.SpecFor(t)
-		if spec != "" {
-			loc, err := NewLocation(spec, cfg.Sheet)
-			if err != nil {
-				return nil, err
-			}
+	locations, err := cfg.Locations()
+	if err != nil {
+		return nil, err
+	}
 
-			f.Locations[t] = loc
-		}
+	for _, locs := range locations {
+		f.Locations = append(f.Locations, locs...)
 	}
 
 	return &f, nil
@@ -200,6 +209,9 @@ func (f *File) readString(sheet string, col, row int) (string, error) {
 
 func (f *File) readDefinition(t Type, sheet string, col, row, offset int) (d Definition, err error) {
 	d.Type = t
+	d.Sheet = sheet
+	d.Column = col
+	d.Row = row
 
 	d.Id, err = f.readInt(sheet, col, row)
 	if err != nil {
@@ -223,56 +235,67 @@ func (f *File) readDefinition(t Type, sheet string, col, row, offset int) (d Def
 func (f *File) AllDefinitions() (map[Type][]Definition, error) {
 	defs := make(map[Type][]Definition)
 
-	for t, _ := range f.Locations {
-		if t == Constant {
+	for _, l := range f.Locations {
+		if l.Type == Constant {
 			continue
 		}
 
-		d, err := f.Definitions(t)
+		d, err := f.Definitions(l.Type)
 		if err != nil {
 			return nil, err
 		}
 
-		defs[t] = d
+		defs[l.Type] = d
 	}
 
 	return defs, nil
 }
 
 func (f *File) Definitions(t Type) ([]Definition, error) {
-	loc, defined := f.Locations[t]
-	if !defined {
+	if f.Config.SpecFor(t) == "" {
 		return nil, fmt.Errorf("Location for %s not defined", t)
 	}
 
-	col, row, err := excelize.CellNameToCoordinates(loc.Axis)
-	if err != nil {
-		return nil, fmt.Errorf("Invalid location for %s: %q", t, loc.Axis)
-	}
-
+	ids := make(map[int]bool)
 	var defs []Definition
-	for ; ; row++ {
-		// check for blank id
-		s, err := f.readString(loc.Sheet, col, row)
+	for _, loc := range f.Locations {
+		if loc.Type != t {
+			continue
+		}
+
+		col, row, err := excelize.CellNameToCoordinates(loc.Axis)
 		if err != nil {
-			return nil, err
-		}
-		if s == "" {
-			break
+			return nil, fmt.Errorf("Invalid location for %s: %q", t, loc.Axis)
 		}
 
-		offset := loc.Offset
-		if offset == 0 {
-			offset = f.Config.Offset
+		for ; ; row++ {
+			// check for blank id
+			s, err := f.readString(loc.Sheet, col, row)
+			if err != nil {
+				return nil, err
+			}
+			if s == "" {
+				break
+			}
+
+			offset := loc.Offset
+			if offset == 0 {
+				offset = f.Config.Offset
+			}
+
+			d, err := f.readDefinition(t, loc.Sheet, col, row, offset)
+			if err != nil {
+				return nil, err
+			}
+
+			if ids[d.Id] {
+				return nil, fmt.Errorf("%s[%d] already defined", t, d.Id)
+			}
+			ids[d.Id] = true
+
+			defs = append(defs, d)
+
 		}
-
-		d, err := f.readDefinition(t, loc.Sheet, col, row, offset)
-		if err != nil {
-			return nil, err
-		}
-
-		defs = append(defs, d)
-
 	}
 
 	return defs, nil
@@ -293,43 +316,49 @@ func (f *File) CreateSheet(name string) {
 }
 
 func (f *File) Constants() (map[string]string, error) {
-	loc, defined := f.Locations[Constant]
-	if !defined {
+	if f.Config.SpecFor(Constant) == "" {
 		return nil, fmt.Errorf("Location for %s not defined", Constant)
 	}
 
 	constants := make(map[string]string)
 
-	col, row, err := excelize.CellNameToCoordinates(loc.Axis)
-	if err != nil {
-		return nil, fmt.Errorf("Invalid location for %s: %q", Constant, loc.Axis)
-	}
-
-	for ; ; row++ {
-		// check for blank identifier
-		id, err := f.readString(loc.Sheet, col, row)
-		if err != nil {
-			return nil, err
-		}
-		if id == "" {
-			break
-		}
-
-		offset := loc.Offset
-		if offset == 0 {
-			offset = f.Config.Offset
-		}
-
-		value, err := f.readString(loc.Sheet, col+offset, row)
-		if err != nil {
-			return nil, err
-		}
-		if value == "" {
-			f.Warnings = append(f.Warnings, fmt.Sprintf("Definition for constant %q is blank", id))
+	for _, loc := range f.Locations {
+		if loc.Type != Constant {
 			continue
 		}
 
-		constants[id] = value
+		col, row, err := excelize.CellNameToCoordinates(loc.Axis)
+		if err != nil {
+			return nil, fmt.Errorf("Invalid location for %s: %q", Constant, loc.Axis)
+		}
+
+		for ; ; row++ {
+			// check for blank identifier
+			id, err := f.readString(loc.Sheet, col, row)
+			if err != nil {
+				return nil, err
+			}
+			if id == "" {
+				break
+			}
+
+			offset := loc.Offset
+			if offset == 0 {
+				offset = f.Config.Offset
+			}
+
+			value, err := f.readString(loc.Sheet, col+offset, row)
+			if err != nil {
+				return nil, err
+			}
+			if value == "" {
+				f.Warnings = append(f.Warnings, fmt.Sprintf("Definition for constant %q is blank", id))
+				continue
+			}
+
+			constants[id] = value
+		}
+
 	}
 
 	return constants, nil

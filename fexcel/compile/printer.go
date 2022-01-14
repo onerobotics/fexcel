@@ -29,12 +29,12 @@ func NewPrinter(fpath string, cfg fexcel.FileConfig) (*Printer, error) {
 		return nil, err
 	}
 
-	for t, _ := range spreadsheet.Locations {
-		switch t {
+	for _, l := range spreadsheet.Locations {
+		switch l.Type {
 		case fexcel.Constant:
 			// noop
 		default:
-			p.Definitions[t.String()] = make(map[string]int)
+			p.Definitions[l.Type.String()] = make(map[string]int)
 		}
 	}
 	for t, defs := range allDefs {

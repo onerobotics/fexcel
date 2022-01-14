@@ -16,11 +16,51 @@ func TestOpenFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if f.Locations[Numreg].Sheet != "Data" {
+	l := f.LocationsFor(Numreg)
+	if len(l) != 1 {
+		t.Errorf("expected 1 location for Numregs. got %d", len(l))
+	}
+	if l[0].Sheet != "Data" {
 		t.Errorf("Bad sheet. Got %q, want %q", f.Locations[Numreg].Sheet, "Data")
 	}
-	if f.Locations[Numreg].Axis != "A2" {
+	if l[0].Axis != "A2" {
 		t.Errorf("Bad axis. Got %q, want %q", f.Locations[Numreg].Axis, "A2")
+	}
+}
+
+func TestMultipleLocations(t *testing.T) {
+	fpath := filepath.Join(testDir, "test.xlsx")
+	cfg := FileConfig{Offset: 1, Numregs: "Data:A2,Data:R2"}
+
+	f, err := OpenFile(fpath, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	l := f.LocationsFor(Numreg)
+	if len(l) != 2 {
+		t.Errorf("expected 2 locations for Numregs. got %d", len(l))
+	}
+	if l[0].Sheet != "Data" {
+		t.Errorf("Bad sheet. Got %q, want %q", f.Locations[Numreg].Sheet, "Data")
+	}
+	if l[0].Axis != "A2" {
+		t.Errorf("Bad axis. Got %q, want %q", f.Locations[Numreg].Axis, "A2")
+	}
+	if l[1].Sheet != "Data" {
+		t.Errorf("Bad sheet. Got %q, want %q", f.Locations[Numreg].Sheet, "Data")
+	}
+	if l[1].Axis != "R2" {
+		t.Errorf("Bad axis. Got %q, want %q", f.Locations[Numreg].Axis, "R2")
+	}
+
+	numregs, err := f.Definitions(Numreg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(numregs) != 9 {
+		t.Errorf("Bad # of numregs. Got %d, want %d", len(numregs), 9)
 	}
 }
 
@@ -84,91 +124,91 @@ func TestDefinitions(t *testing.T) {
 		{
 			Numreg,
 			[]Definition{
-				{Numreg, 1, "this is an extremely long comment"},
-				{Numreg, 2, "two"},
-				{Numreg, 3, "three"},
-				{Numreg, 4, "four"},
-				{Numreg, 5, "five"},
+				{Numreg, "Data", 1, 2, 1, "this is an extremely long comment"},
+				{Numreg, "Data", 1, 3, 2, "two"},
+				{Numreg, "Data", 1, 4, 3, "three"},
+				{Numreg, "Data", 1, 5, 4, "four"},
+				{Numreg, "Data", 1, 6, 5, "five"},
 			},
 		},
 		{
 			Posreg,
 			[]Definition{
-				{Posreg, 1, "pr1"},
-				{Posreg, 2, "pr2"},
-				{Posreg, 3, "pr3"},
-				{Posreg, 4, "pr4"},
-				{Posreg, 5, "pr5"},
+				{Posreg, "Data", 4, 2, 1, "pr1"},
+				{Posreg, "Data", 4, 3, 2, "pr2"},
+				{Posreg, "Data", 4, 4, 3, "pr3"},
+				{Posreg, "Data", 4, 5, 4, "pr4"},
+				{Posreg, "Data", 4, 6, 5, "pr5"},
 			},
 		},
 		{
 			Sreg,
 			[]Definition{
-				{Sreg, 1, "sreg1"},
-				{Sreg, 2, "sreg2"},
+				{Sreg, "Data", 7, 2, 1, "sreg1"},
+				{Sreg, "Data", 7, 3, 2, "sreg2"},
 			},
 		},
 		{
 			Din,
 			[]Definition{
-				{Din, 1, "din1"},
-				{Din, 2, "din2"},
-				{Din, 3, "din3"},
+				{Din, "IO", 1, 2, 1, "din1"},
+				{Din, "IO", 1, 3, 2, "din2"},
+				{Din, "IO", 1, 4, 3, "din3"},
 			},
 		},
 		{
 			Dout,
 			[]Definition{
-				{Dout, 1, "dout1"},
-				{Dout, 2, "dout2"},
-				{Dout, 3, "dout3"},
-				{Dout, 4, "dout4"},
+				{Dout, "IO", 3, 2, 1, "dout1"},
+				{Dout, "IO", 3, 3, 2, "dout2"},
+				{Dout, "IO", 3, 4, 3, "dout3"},
+				{Dout, "IO", 3, 5, 4, "dout4"},
 			},
 		},
 		{
 			Rin,
 			[]Definition{
-				{Rin, 1, "rin1"},
-				{Rin, 2, "rin2"},
+				{Rin, "IO", 5, 2, 1, "rin1"},
+				{Rin, "IO", 5, 3, 2, "rin2"},
 			},
 		},
 		{
 			Rout,
 			[]Definition{
-				{Rout, 1, "rout1"},
+				{Rout, "IO", 7, 2, 1, "rout1"},
 			},
 		},
 		{
 			Gin,
 			[]Definition{
-				{Gin, 1, "gin1"},
+				{Gin, "IO", 9, 2, 1, "gin1"},
 			},
 		},
 		{
 			Gout,
 			[]Definition{
-				{Gout, 1, "gout1"},
+				{Gout, "IO", 11, 2, 1, "gout1"},
 			},
 		},
 		{
 			Ain,
 			[]Definition{
-				{Ain, 1, "ain1"},
+				{Ain, "IO", 13, 2, 1, "ain1"},
 			},
 		},
 		{
 			Aout,
 			[]Definition{
-				{Aout, 1, "aout1"},
+				{Aout, "IO", 15, 2, 1, "aout1"},
 			},
 		},
 		{
 			Ualm,
 			[]Definition{
-				{Ualm, 1, "test"},
-				{Ualm, 2, "test two"},
-				{Ualm, 3, "test three"},
-				{Ualm, 4, "test four"},
+				{Ualm, "Alarms", 1, 2, 1, "test"},
+				{Ualm, "Alarms", 1, 3, 2, "test two"},
+				{Ualm, "Alarms", 1, 4, 3, "test three"},
+				{Ualm, "Alarms", 1, 5, 4, "test four"},
 			},
 		},
 	}
@@ -188,6 +228,18 @@ func TestDefinitions(t *testing.T) {
 		for id, def := range defs {
 			if def.Type != e.Type {
 				t.Errorf("Bad Type. Got %q, want %q", def.Type, e.Type)
+			}
+
+			if def.Sheet != e.defs[id].Sheet {
+				t.Errorf("Bad sheet. Got %q want %q", def.Sheet, e.defs[id].Sheet)
+			}
+
+			if def.Column != e.defs[id].Column {
+				t.Errorf("Bad column. Got %d want %d", def.Column, e.defs[id].Column)
+			}
+
+			if def.Row != e.defs[id].Row {
+				t.Errorf("Bad row. Got %d want %d", def.Row, e.defs[id].Row)
 			}
 
 			if def.Id != e.defs[id].Id {
@@ -226,7 +278,7 @@ func TestNewLocation(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		l, err := NewLocation(test.spec, test.defaultSheet)
+		l, err := NewLocation(Numreg, test.spec, test.defaultSheet)
 		if err != nil {
 			t.Fatal(err)
 		}

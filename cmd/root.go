@@ -150,13 +150,18 @@ func rootMain(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	for d, _ := range f.Locations {
-		defs, err := f.Definitions(d)
+	types := make(map[fexcel.Type]bool)
+	for _, l := range f.Locations {
+		types[l.Type] = true
+	}
+
+	for t, _ := range types {
+		defs, err := f.Definitions(t)
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("Found %d %ss.\n", len(defs), d)
+		fmt.Printf("Found %d %ss.\n", len(defs), t)
 	}
 
 	return nil

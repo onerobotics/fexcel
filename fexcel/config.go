@@ -3,6 +3,7 @@ package fexcel
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 )
@@ -53,12 +54,15 @@ func (c *FileConfig) Locations() (map[Type][]*Location, error) {
 	for _, t := range types {
 		spec := c.SpecFor(t)
 		if spec != "" {
-			l, err := NewLocation(spec, c.Sheet)
-			if err != nil {
-				return nil, err
-			}
+			locs := strings.Split(spec, ",")
+			for _, loc := range locs {
+				l, err := NewLocation(t, loc, c.Sheet)
+				if err != nil {
+					return nil, err
+				}
 
-			locations[t] = append(locations[t], l)
+				locations[t] = append(locations[t], l)
+			}
 		}
 	}
 

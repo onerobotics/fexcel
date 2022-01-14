@@ -52,7 +52,8 @@ func NewCreator(path string, cfg Config, headers bool, targetPath string) (*Crea
 func (c *Creator) Create(w io.Writer) error {
 	fmt.Fprintf(w, "Creating file: %s\n", c.file.path)
 
-	for t, location := range c.file.Locations {
+	for _, location := range c.file.Locations {
+		t := location.Type
 		fmt.Fprintf(w, "Reading target %s comments\n", t)
 		err := c.target.GetComments(t)
 		if err != nil {

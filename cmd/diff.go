@@ -52,7 +52,12 @@ func diffMain(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	for dataType, _ := range d.Locations() {
+	types := make(map[fexcel.Type]bool)
+	for _, l := range d.Locations() {
+		types[l.Type] = true
+	}
+
+	for dataType, _ := range types {
 		err := d.FprintTable(os.Stdout, dataType, all)
 		if err != nil {
 			return err

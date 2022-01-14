@@ -137,7 +137,7 @@ func (d *DiffCommand) FprintTable(w io.Writer, t Type, all bool) error {
 	return nil
 }
 
-func (d *DiffCommand) Locations() map[Type]*Location {
+func (d *DiffCommand) Locations() []*Location {
 	return d.file.Locations
 }
 
