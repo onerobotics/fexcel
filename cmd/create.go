@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/onerobotics/fexcel/fexcel"
 	"github.com/spf13/cobra"
@@ -32,11 +31,6 @@ func init() {
 func validateCreateArgs(cmd *cobra.Command, args []string) error {
 	if len(args) != 2 {
 		return errors.New("requires a spreadsheet path and a target (IP or backup directory)")
-	}
-
-	ext := filepath.Ext(args[0])
-	if ext != ".xlsx" {
-		return errors.New("requires a spreadsheet path ending in .xlsx")
 	}
 
 	// TODO: validate args[1]?
