@@ -10,6 +10,9 @@ import (
 )
 
 func TestPrinter(t *testing.T) {
+	removeCacheFile()
+	defer removeCacheFile()
+
 	p, err := NewPrinter("testdata/test.xlsx", fexcel.FileConfig{
 		Constants: "G2",
 		Numregs:   "A2",
@@ -65,6 +68,9 @@ func TestPrinter(t *testing.T) {
 }
 
 func TestGolden(t *testing.T) {
+	removeCacheFile()
+	defer removeCacheFile()
+
 	p, err := NewPrinter("testdata/test.xlsx", fexcel.FileConfig{
 		Constants: "G2",
 		Numregs:   "A2",
@@ -118,6 +124,9 @@ func TestGolden(t *testing.T) {
 }
 
 func TestPrinterErrors(t *testing.T) {
+	removeCacheFile()
+	defer removeCacheFile()
+
 	p, err := NewPrinter("testdata/test.xlsx", fexcel.FileConfig{
 		Constants: "G2",
 		Numregs:   "A2",
@@ -160,6 +169,9 @@ func TestPrinterErrors(t *testing.T) {
 }
 
 func TestBuiltinDefinitions(t *testing.T) {
+	removeCacheFile()
+	defer removeCacheFile()
+
 	p, err := NewPrinter("testdata/test.xlsx", fexcel.FileConfig{
 		Sheet:     "Data",
 		Constants: "G2",
